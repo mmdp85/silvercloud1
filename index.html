@@ -1805,7 +1805,7 @@ async function loadPrices() {
   }
   // ── Merval en vivo desde IOL ──
   try {
-    var mervalResp = await fetch('/api/iol?action=cotizacion&simbolo=MERVAL&mercado=bCBA');
+    var mervalResp = await fetch('/.netlify/functions/iol?action=cotizacion&simbolo=MERVAL&mercado=bCBA');
     var mervalData = await mervalResp.json();
     if (mervalData && mervalData.ultimoPrecio) {
       var mv = parseFloat(mervalData.ultimoPrecio);
@@ -1833,7 +1833,7 @@ async function loadPrices() {
   // ── IOL Panel Líder — tickers fijos, 1 llamada multi ──
   try {
     var liderTickers = ['GGAL','PAMP','YPF','TXAR','BMA','SUPV','TECO2','ALUA','LOMA','MIRG','BYMA','CRES','TRAN','CEPU','VIST','EDN','COME','YPFD'];
-    var liderResp = await fetch('/api/iol?action=multi', {
+    var liderResp = await fetch('/.netlify/functions/iol?action=multi', {
       method: 'POST',
       headers: {'Content-Type':'application/json'},
       body: JSON.stringify({ simbolos: liderTickers, mercado: 'bCBA' })
@@ -2738,7 +2738,7 @@ async function iolLookupRow(btn) {
   btn.disabled = true;
 
   try {
-    var resp = await fetch('/api/iol?action=cotizacion&simbolo=' + ticker + '&mercado=bCBA');
+    var resp = await fetch('/.netlify/functions/iol?action=cotizacion&simbolo=' + ticker + '&mercado=bCBA');
     var data = await resp.json();
 
     if (data.error || !data.ultimoPrecio) {
@@ -3125,7 +3125,7 @@ async function loadBonos() {
   var tickers = BONOS_DEF.map(function(b){ return b.ticker; });
 
   try {
-    var resp = await fetch('/api/iol?action=multi', {
+    var resp = await fetch('/.netlify/functions/iol?action=multi', {
       method: 'POST',
       headers: {'Content-Type':'application/json'},
       body: JSON.stringify({ simbolos: tickers, mercado: 'bCBA' })
@@ -3228,8 +3228,8 @@ function renderBonosTable(tbodyId, rows, color) {
       + '<td><span class="bonos-name-cell">' + r.name + '</span></td>'
       + '<td><span class="' + lawClass + '">' + lawLabel + '</span></td>'
       + '<td><span class="bonos-price-cell">' + precioFmt + '</span></td>'
-      + '<td><span style="color:#4ade80;font-family:'DM Mono',monospace;">' + compraFmt + '</span></td>'
-      + '<td><span style="color:#f87171;font-family:'DM Mono',monospace;">' + ventaFmt + '</span></td>'
+      + '<td><span style="color:#4ade80;font-family:monospace;">' + compraFmt + '</span></td>'
+      + '<td><span style="color:#f87171;font-family:monospace;">' + ventaFmt + '</span></td>'
       + '<td class="' + varClass + '" style="font-size:11px;">' + varStr + '</td>'
       + '<td><span class="bonos-vcto-cell">' + r.mat.slice(0,7) + '</span></td>'
       + '</tr>';
@@ -3373,7 +3373,7 @@ async function loadLecaps() {
   var results = [];
 
   try {
-    var resp = await fetch('/api/iol?action=multi', {
+    var resp = await fetch('/.netlify/functions/iol?action=multi', {
       method: 'POST',
       headers: {'Content-Type':'application/json'},
       body: JSON.stringify({ simbolos: tickers, mercado: 'bCBA' })
