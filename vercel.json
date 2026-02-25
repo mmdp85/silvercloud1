@@ -1,0 +1,7 @@
+{
+  "functions": {
+    "api/iol.js": {
+      "maxDuration": 30
+    }
+  }
+}
