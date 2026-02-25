@@ -1,0 +1,11 @@
+{
+  "version": 2,
+  "builds": [
+    { "src": "iol.js", "use": "@vercel/node" },
+    { "src": "index.html", "use": "@vercel/static" }
+  ],
+  "routes": [
+    { "src": "/api/iol", "dest": "/iol.js" },
+    { "src": "/(.*)", "dest": "/index.html" }
+  ]
+}
