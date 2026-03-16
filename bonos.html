@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bonos USD · SilverCloud</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#0a0c0f;--surface:#111318;--surface2:#181c22;--border:#1e2530;--border2:#252d3a;
+    --text:#e8edf5;--text2:#7a8799;--text3:#4a5568;--accent:#f5c842;
+    --up:#00c47a;--down:#ff4757;--flat:#5a6a7e;--up-bg:rgba(0,196,122,0.08);--down-bg:rgba(255,71,87,0.08);
+    --mono:'IBM Plex Mono',monospace;--sans:'IBM Plex Sans',sans-serif;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:100vh;}
+  header{display:flex;align-items:center;justify-content:space-between;padding:16px 32px;border-bottom:1px solid var(--border);background:var(--bg);position:sticky;top:0;z-index:100;}
+  .logo{font-family:var(--mono);font-size:15px;font-weight:600;color:var(--accent);letter-spacing:0.05em;text-decoration:none;}
+  .logo span{color:var(--text2);font-weight:400;}
+  .header-right{display:flex;align-items:center;gap:20px;}
+  .status-dot{display:flex;align-items:center;gap:6px;font-family:var(--mono);font-size:11px;color:var(--text2);}
+  .dot{width:7px;height:7px;border-radius:50%;background:var(--text3);}
+  .dot.live{background:var(--up);animation:pulse 2s infinite;}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}
+  .btn-refresh{font-family:var(--mono);font-size:11px;padding:6px 14px;border:1px solid var(--border2);background:transparent;color:var(--text2);border-radius:4px;cursor:pointer;transition:all 0.15s;}
+  .btn-refresh:hover{border-color:var(--accent);color:var(--accent);}
+  .btn-refresh:disabled{opacity:0.4;cursor:not-allowed;}
+  main{padding:28px 32px;}
+  .page-header{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:24px;}
+  .page-title{font-family:var(--mono);font-size:13px;font-weight:500;color:var(--text2);letter-spacing:0.1em;text-transform:uppercase;}
+  .page-subtitle{font-family:var(--mono);font-size:11px;color:var(--text3);}
+  .summary-row{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:24px;}
+  .summary-card{background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:14px 16px;}
+  .summary-label{font-family:var(--mono);font-size:10px;color:var(--text3);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:6px;}
+  .summary-value{font-family:var(--mono);font-size:22px;font-weight:600;color:var(--text);}
+  .summary-value.up{color:var(--up);}.summary-value.down{color:var(--down);}
+  .section-label{font-family:var(--mono);font-size:10px;color:var(--text3);letter-spacing:0.1em;text-transform:uppercase;padding:10px 20px;border-bottom:1px solid var(--border);background:var(--bg);}
+  .table-wrap{background:var(--surface);border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:20px;}
+  table{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:12px;}
+  thead th{padding:10px 14px;text-align:right;font-size:10px;font-weight:500;color:var(--text3);letter-spacing:0.08em;text-transform:uppercase;border-bottom:1px solid var(--border);background:var(--bg);white-space:nowrap;cursor:pointer;user-select:none;transition:color 0.15s;}
+  thead th:hover{color:var(--text2);}thead th:first-child{text-align:left;padding-left:20px;}thead th.sorted{color:var(--accent);}
+  tbody tr{border-bottom:1px solid var(--border);transition:background 0.1s;}
+  tbody tr:last-child{border-bottom:none;}tbody tr:hover{background:var(--surface2);}
+  tbody td{padding:11px 14px;text-align:right;color:var(--text);white-space:nowrap;}
+  tbody td:first-child{text-align:left;padding-left:20px;}
+  .ticker{font-weight:600;font-size:13px;}
+  .ticker-desc{font-size:10px;color:var(--text3);font-family:var(--sans);margin-top:1px;font-weight:300;}
+  .price{font-weight:600;font-size:13px;}
+  .var-badge{display:inline-flex;align-items:center;gap:3px;padding:3px 8px;border-radius:3px;font-size:11px;font-weight:500;min-width:68px;justify-content:center;}
+  .var-badge.up{background:var(--up-bg);color:var(--up);}.var-badge.down{background:var(--down-bg);color:var(--down);}.var-badge.flat{color:var(--flat);}
+  .muted{color:var(--text2);}.muted-strong{color:var(--text3);}
+  .footer-bar{display:flex;align-items:center;justify-content:space-between;padding:12px 20px;border-top:1px solid var(--border);background:var(--bg);font-family:var(--mono);font-size:10px;color:var(--text3);}
+  @media(max-width:900px){main{padding:16px}header{padding:12px 16px}.summary-row{grid-template-columns:repeat(2,1fr)}.hide-mobile{display:none}}
+</style>
+</head>
+<body>
+<header>
+  <a href="index.html" class="logo">SILVER<span>CLOUD</span></a>
+  <div class="header-right">
+    <div class="status-dot"><div class="dot" id="statusDot"></div><span id="statusText">—</span></div>
+    <button class="btn-refresh" id="btnRefresh" onclick="cargarPanel()">↺ Actualizar</button>
+  </div>
+</header>
+<main>
+  <div class="page-header">
+    <div class="page-title">Bonos Soberanos USD · AL & GD</div>
+    <div class="page-subtitle" id="lastUpdate">—</div>
+  </div>
+  <div class="summary-row">
+    <div class="summary-card"><div class="summary-label">Subiendo</div><div class="summary-value" id="sumUp">—</div></div>
+    <div class="summary-card"><div class="summary-label">Bajando</div><div class="summary-value" id="sumDown">—</div></div>
+    <div class="summary-card"><div class="summary-label">Mayor suba</div><div class="summary-value up" id="sumBest">—</div></div>
+    <div class="summary-card"><div class="summary-label">Mayor baja</div><div class="summary-value down" id="sumWorst">—</div></div>
+  </div>
+
+  <div class="table-wrap">
+    <div class="section-label">Serie AL — Ley Argentina</div>
+    <table>
+      <thead><tr>
+        <th>Bono</th><th>Último</th><th class="sorted">Var %</th>
+        <th class="hide-mobile">Compra</th><th class="hide-mobile">Venta</th>
+        <th class="hide-mobile">Apertura</th><th class="hide-mobile">Mínimo</th><th class="hide-mobile">Máximo</th>
+        <th class="hide-mobile">Cierre ant.</th><th>Monto op.</th>
+      </tr></thead>
+      <tbody id="tbodyAL"><tr><td colspan="10" style="text-align:center;padding:30px;color:#4a5568;font-family:var(--mono);font-size:12px;">Cargando...</td></tr></tbody>
+    </table>
+  </div>
+
+  <div class="table-wrap">
+    <div class="section-label">Serie GD — Ley Nueva York</div>
+    <table>
+      <thead><tr>
+        <th>Bono</th><th>Último</th><th class="sorted">Var %</th>
+        <th class="hide-mobile">Compra</th><th class="hide-mobile">Venta</th>
+        <th class="hide-mobile">Apertura</th><th class="hide-mobile">Mínimo</th><th class="hide-mobile">Máximo</th>
+        <th class="hide-mobile">Cierre ant.</th><th>Monto op.</th>
+      </tr></thead>
+      <tbody id="tbodyGD"><tr><td colspan="10" style="text-align:center;padding:30px;color:#4a5568;font-family:var(--mono);font-size:12px;">Cargando...</td></tr></tbody>
+    </table>
+    <div class="footer-bar"><span>BYMA · Bonos USD · Tiempo real IOL</span><span id="footerCount">—</span></div>
+  </div>
+</main>
+<script>
+const PROXY='https://silvercloud1.vercel.app/api/iol';
+const AL_TICKERS=['AL29','AL30','AL35','AL41','AE38'];
+const GD_TICKERS=['GD29','GD30','GD35','GD38','GD41','GD46'];
+const NOMBRES={
+  AL29:'Bonar 2029',AL30:'Bonar 2030',AL35:'Bonar 2035',AL41:'Bonar 2041',AE38:'Bonar 2038',
+  GD29:'Global 2029',GD30:'Global 2030',GD35:'Global 2035',GD38:'Global 2038',GD41:'Global 2041',GD46:'Global 2046'
+};
+let datosAL=[],datosGD=[];
+function fmt(n,dec=2){if(n==null||isNaN(n))return'—';return n.toLocaleString('es-AR',{minimumFractionDigits:dec,maximumFractionDigits:dec});}
+function fmtM(n){if(n==null||isNaN(n))return'—';if(n>=1e9)return(n/1e9).toFixed(1)+'B';if(n>=1e6)return(n/1e6).toFixed(1)+'M';if(n>=1e3)return(n/1e3).toFixed(0)+'K';return n.toFixed(0);}
+function varClass(v){return v>0?'up':v<0?'down':'flat';}
+function varSign(v){return v>0?'▲':v<0?'▼':'—';}
+function renderRows(datos,tbodyId){
+  const sorted=[...datos].sort((a,b)=>a.simbolo.localeCompare(b.simbolo));
+  document.getElementById(tbodyId).innerHTML=sorted.map(d=>{
+    const vc=varClass(d.variacion),vs=varSign(d.variacion);
+    return`<tr><td><div class="ticker">${d.simbolo}</div><div class="ticker-desc">${NOMBRES[d.simbolo]||''}</div></td><td><span class="price ${vc}">${fmt(d.ultimoPrecio)}</span></td><td><span class="var-badge ${vc}">${vs} ${Math.abs(d.variacion).toFixed(2)}%</span></td><td class="hide-mobile muted">${fmt(d.precioCompra)}</td><td class="hide-mobile muted">${fmt(d.precioVenta)}</td><td class="hide-mobile muted-strong">${fmt(d.apertura)}</td><td class="hide-mobile muted-strong">${fmt(d.minimo)}</td><td class="hide-mobile muted-strong">${fmt(d.maximo)}</td><td class="hide-mobile muted-strong">${fmt(d.cierreAnterior)}</td><td class="muted">${fmtM(d.montoOperado)}</td></tr>`;
+  }).join('');
+}
+function renderSummary(datos){
+  const all=[...datosAL,...datosGD];
+  const up=all.filter(d=>d.variacion>0).length,down=all.filter(d=>d.variacion<0).length;
+  const s=[...all].sort((a,b)=>b.variacion-a.variacion);
+  document.getElementById('sumUp').textContent=up;
+  document.getElementById('sumDown').textContent=down;
+  document.getElementById('sumBest').textContent=s[0]?s[0].simbolo+' '+(s[0].variacion>0?'+':'')+fmt(s[0].variacion)+'%':'—';
+  document.getElementById('sumWorst').textContent=s[s.length-1]?s[s.length-1].simbolo+' '+fmt(s[s.length-1].variacion)+'%':'—';
+  document.getElementById('footerCount').textContent=all.length+' bonos';
+}
+async function fetchTicker(t){
+  try{
+    const res=await fetch(`${PROXY}?action=cotizacion&simbolo=${t}&mercado=bCBA`);
+    const d=await res.json();
+    if(d.parseError||d.error)return null;
+    const p=d.puntas||[];
+    return{simbolo:t,ultimoPrecio:d.ultimoPrecio,variacion:d.variacion,precioCompra:p[0]?.precioCompra??null,precioVenta:p[0]?.precioVenta??null,apertura:d.apertura,minimo:d.minimo,maximo:d.maximo,cierreAnterior:d.cierreAnterior,montoOperado:d.montoOperado};
+  }catch(e){return null;}
+}
+async function cargarPanel(){
+  const btn=document.getElementById('btnRefresh'),dot=document.getElementById('statusDot'),st=document.getElementById('statusText');
+  btn.disabled=true;dot.className='dot';st.textContent='Cargando...';
+  try{
+    const [rAL,rGD]=await Promise.all([
+      Promise.all(AL_TICKERS.map(fetchTicker)),
+      Promise.all(GD_TICKERS.map(fetchTicker))
+    ]);
+    datosAL=rAL.filter(Boolean);datosGD=rGD.filter(Boolean);
+    renderRows(datosAL,'tbodyAL');renderRows(datosGD,'tbodyGD');renderSummary();
+    const n=new Date();
+    document.getElementById('lastUpdate').textContent=`Actualizado ${n.getHours().toString().padStart(2,'0')}:${n.getMinutes().toString().padStart(2,'0')}:${n.getSeconds().toString().padStart(2,'0')}`;
+    dot.className='dot live';st.textContent='En vivo · IOL';
+  }catch(e){st.textContent='Error';dot.className='dot';}
+  btn.disabled=false;
+}
+cargarPanel();setInterval(cargarPanel,60000);
+</script>
+</body>
+</html>
