@@ -6,6 +6,16 @@
   ],
   "routes": [
     { "src": "/api/iol", "dest": "/api/iol.js" },
+  {
+  "version": 2,
+  "builds": [
+    { "src": "api/iol.js", "use": "@vercel/node" },
+    { "src": "index.html", "use": "@vercel/static" },
+    { "src": "merval.html", "use": "@vercel/static" }
+  ],
+  "routes": [
+    { "src": "/api/iol", "dest": "/api/iol.js" },
+    { "src": "/merval.html", "dest": "/merval.html" },
     { "src": "/(.*)", "dest": "/index.html" }
   ]
 }
