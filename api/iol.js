@@ -97,7 +97,13 @@ module.exports = async (req, res) => {
       return;
     }
 
-    res.status(400).json({ error: 'Unknown action' });
-  } catch(e) {
-    res.status(500).json({ error: e.message });
-  }
+   if (action === 'historico') {
+      const { simbolo, mercado = 'bCBA', fechaDesde, fechaHasta } = params;
+      const token = await getToken(process.env.IOL_USER, process.env.IOL_PASS);
+      const r = await iolGet(
+        `/api/v2/Cotizaciones/${simbolo}/${mercado}/historico?fechaDesde=${fechaDesde}&fechaHasta=${fechaHasta}&ajustada=sinAjustar`,
+        token
+      );
+      res.status(r.status).json(JSON.parse(r.body));
+      return;
+    }
