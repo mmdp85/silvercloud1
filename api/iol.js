@@ -27,7 +27,7 @@ async function iolGet(path, token) {
 async function getToken(user, pass) {
   const now = Date.now();
   if (tokenCache.access && now < tokenCache.expiry) return tokenCache.access;
-  const body = `username=${encodeURIComponent(user)}&password=${encodeURIComponent(pass)}&grant_type=password`;
+  const body = 'username=' + encodeURIComponent(user) + '&password=' + encodeURIComponent(pass) + '&grant_type=password';
   const res = await iolRequest({
     hostname: 'api.invertironline.com',
     path: '/token',
@@ -45,81 +45,73 @@ function safeJson(str) {
 }
 
 function parseBody(req) {
-  return new Promise(resolve => {
-    let data = '';
-    req.on('data', chunk => data += chunk);
-    req.on('end', () => {
+  return new Promise(function(resolve) {
+    var data = '';
+    req.on('data', function(chunk) { data += chunk; });
+    req.on('end', function() {
       try { resolve(JSON.parse(data)); } catch(e) { resolve({}); }
     });
   });
 }
 
-module.exports = async (req, res) => {
+module.exports = async function(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
   if (req.method === 'OPTIONS') { res.status(200).end(); return; }
 
-  const params = req.query;
-  const action = params.action;
+  var params = req.query;
+  var action = params.action;
 
   try {
     if (action === 'cotizacion') {
-      const simbolo = params.simbolo;
-      const mercado = params.mercado || 'bCBA';
-      const token = await getToken(process.env.IOL_USER, process.env.IOL_PASS);
-      const r = await iolGet('/api/v2/' + mercado + '/Titulos/' + simbolo + '/cotizacion', token);
+      var simbolo = params.simbolo;
+      var mercado = params.mercado || 'bCBA';
+      var token = await getToken(process.env.IOL_USER, process.env.IOL_PASS);
+      var r = await iolGet('/api/v2/' + mercado + '/Titulos/' + simbolo + '/cotizacion', token);
       res.status(r.status).json(safeJson(r.body));
       return;
     }
 
+    if (action === 'panel') {
+      var mercado2 = params.mercado || 'bCBA';
+      var panelNombre = params.panel || 'Lider';
+      var token2 = await getToken(process.env.IOL_USER, process.env.IOL_PASS);
+      var r2 = await iolGet('/api/v2/' + mercado2 + '/Titulos/cotizacion/paneles/' + panelNombre, token2);
+      res.status(r2.status).json(safeJson(r2.body));
+      return;
+    }
+
     if (action === 'multi') {
-      const body = await parseBody(req);
-      const simbolos = body.simbolos || [];
-      const mercado = body.mercado || 'bCBA';
-      const token = await getToken(process.env.IOL_USER, process.env.IOL_PASS);
-      const results = {};
+      var body = await parseBody(req);
+      var simbolos = body.simbolos || [];
+      var mercado3 = body.mercado || 'bCBA';
+      var token3 = await getToken(process.env.IOL_USER, process.env.IOL_PASS);
+      var results = {};
       await Promise.all(simbolos.map(async function(s) {
         try {
-          const r = await iolGet('/api/v2/' + mercado + '/Titulos/' + s + '/cotizacion', token);
-          results[s] = r.status === 200 ? JSON.parse(r.body) : { error: r.status };
+          var r3 = await iolGet('/api/v2/' + mercado3 + '/Titulos/' + s + '/cotizacion', token3);
+          results[s] = r3.status === 200 ? JSON.parse(r3.body) : { error: r3.status };
         } catch(e) { results[s] = { error: e.message }; }
       }));
       res.status(200).json(results);
       return;
     }
 
-     if (action === 'panel') {
-      const mercado = params.mercado || 'bCBA';
-      const panelNombre = params.panel || 'Lider';
-      const token = await getToken(process.env.IOL_USER, process.env.IOL_PASS);
-      const url = '/api/v2/' + mercado + '/Titulos/cotizacion/paneles/' + panelNombre;
-      const r = await iolGet(url, token);
-      res.status(r.status).json(safeJson(r.body));
-      return;
-    }
-
-Commit, esperá el redeploy y probás de nuevo:
-```
-https://silvercloud1.vercel.app/api/iol?action=panel&panel=Lider
-      res.status(r.status).json(safeJson(r.body));
-      return;
-    }
-
     if (action === 'portafolio') {
-      const token = await getToken(process.env.IOL_USER, process.env.IOL_PASS);
-      const r = await iolGet('/api/v2/micuenta/portafolio/arg', token);
-      res.status(r.status).json(safeJson(r.body));
+      var token4 = await getToken(process.env.IOL_USER, process.env.IOL_PASS);
+      var r4 = await iolGet('/api/v2/micuenta/portafolio/arg', token4);
+      res.status(r4.status).json(safeJson(r4.body));
       return;
     }
 
     if (action === 'historico') {
-      const simbolo = params.simbolo;
-      const mercado = params.mercado || 'bCBA';
-      const fechaDesde = params.fechaDesde;
-      const fechaHasta = params.fechaHasta;
-      const token = await getToken(process.env.IOL_USER, process.env.IOL_PASS);
-      const r = await iolGet('/api/v2/Cotizaciones/' + simbolo + '/' + mercado + '/historico?fechaDesde=' + fechaDesde + '&fechaHasta=' + fechaHasta + '&ajustada=sinAjustar', token);
-      res.status(r.status).json(safeJson(r.body));
+      var simbolo2 = params.simbolo;
+      var mercado4 = params.mercado || 'bCBA';
+      var fechaDesde = params.fechaDesde;
+      var fechaHasta = params.fechaHasta;
+      var token5 = await getToken(process.env.IOL_USER, process.env.IOL_PASS);
+      var r5 = await iolGet('/api/v2/Cotizaciones/' + simbolo2 + '/' + mercado4 + '/historico?fechaDesde=' + fechaDesde + '&fechaHasta=' + fechaHasta + '&ajustada=sinAjustar', token5);
+      res.status(r5.status).json(safeJson(r5.body));
       return;
     }
 
