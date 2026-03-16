@@ -57,13 +57,13 @@ module.exports = async (req, res) => {
   const action = params.action;
 
   try {
-    if (action === 'cotizacion') {
+   if (action === 'cotizacion') {
       const { simbolo, mercado = 'bCBA' } = params;
       const token = await getToken(process.env.IOL_USER, process.env.IOL_PASS);
       const r = await iolGet(`/api/v2/${mercado}/Titulos/${simbolo}/cotizacion`, token);
-     let parsed;
-try { parsed = JSON.parse(r.body); } catch(e) { parsed = { raw: r.body, parseError: e.message }; }
-res.status(r.status).json(parsed);
+      let parsed;
+      try { parsed = JSON.parse(r.body); } catch(e) { parsed = { raw: r.body, parseError: e.message }; }
+      res.status(r.status).json(parsed);
       return;
     }
 
