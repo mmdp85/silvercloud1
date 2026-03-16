@@ -61,7 +61,9 @@ module.exports = async (req, res) => {
       const { simbolo, mercado = 'bCBA' } = params;
       const token = await getToken(process.env.IOL_USER, process.env.IOL_PASS);
       const r = await iolGet(`/api/v2/${mercado}/Titulos/${simbolo}/cotizacion`, token);
-      res.status(r.status).json(JSON.parse(r.body));
+     let parsed;
+try { parsed = JSON.parse(r.body); } catch(e) { parsed = { raw: r.body, parseError: e.message }; }
+res.status(r.status).json(parsed);
       return;
     }
 
@@ -86,7 +88,9 @@ module.exports = async (req, res) => {
       const panel = (params.panel === 'lideres') ? 'lider' : (params.panel || 'acciones');
       const token = await getToken(process.env.IOL_USER, process.env.IOL_PASS);
       const r = await iolGet(`/api/v2/${mercado}/Titulos/${panel}/cotizacion/paneles`, token);
-      res.status(r.status).json(JSON.parse(r.body));
+      let parsed;
+try { parsed = JSON.parse(r.body); } catch(e) { parsed = { raw: r.body, parseError: e.message }; }
+res.status(r.status).json(parsed);
       return;
     }
 
@@ -104,6 +108,8 @@ module.exports = async (req, res) => {
         `/api/v2/Cotizaciones/${simbolo}/${mercado}/historico?fechaDesde=${fechaDesde}&fechaHasta=${fechaHasta}&ajustada=sinAjustar`,
         token
       );
-      res.status(r.status).json(JSON.parse(r.body));
+     let parsed;
+try { parsed = JSON.parse(r.body); } catch(e) { parsed = { raw: r.body, parseError: e.message }; }
+res.status(r.status).json(parsed);
       return;
     }
