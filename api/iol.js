@@ -92,7 +92,12 @@ module.exports = async (req, res) => {
       const mercado = params.mercado || 'bCBA';
       const panel = params.panel === 'lideres' ? 'lider' : (params.panel || 'acciones');
       const token = await getToken(process.env.IOL_USER, process.env.IOL_PASS);
-      const r = await iolGet('/api/v2/' + mercado + '/Titulos/' + panel + '/cotizacion/paneles', token);
+      const r = await iolGet('/api/v2/' + mercado + '/Titulos/cotizacion/paneles/' + panel, token);
+```
+
+Commit, esperá el redeploy y probás de nuevo:
+```
+https://silvercloud1.vercel.app/api/iol?action=panel&panel=Lider
       res.status(r.status).json(safeJson(r.body));
       return;
     }
