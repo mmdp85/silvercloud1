@@ -1,4 +1,3 @@
-No te preocupes, copiá esto directo en GitHub. Entrá al archivo, click en el lápiz, seleccioná todo y reemplazá con esto:
 javascriptconst https = require('https');
 
 let tokenCache = { access: null, refresh: null, expiry: 0 };
