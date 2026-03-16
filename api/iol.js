@@ -88,12 +88,15 @@ module.exports = async (req, res) => {
       return;
     }
 
-    if (action === 'panel') {
+     if (action === 'panel') {
       const mercado = params.mercado || 'bCBA';
-      const panel = params.panel === 'lideres' ? 'lider' : (params.panel || 'acciones');
+      const panelNombre = params.panel || 'Lider';
       const token = await getToken(process.env.IOL_USER, process.env.IOL_PASS);
-      const r = await iolGet('/api/v2/' + mercado + '/Titulos/cotizacion/paneles/' + panel, token);
-```
+      const url = '/api/v2/' + mercado + '/Titulos/cotizacion/paneles/' + panelNombre;
+      const r = await iolGet(url, token);
+      res.status(r.status).json(safeJson(r.body));
+      return;
+    }
 
 Commit, esperá el redeploy y probás de nuevo:
 ```
