@@ -3,6 +3,9 @@
   "builds": [
     { "src": "api/iol.js", "use": "@vercel/node" },
     { "src": "index.html", "use": "@vercel/static" },
+    { "src": "sw.js", "use": "@vercel/static" },
+    { "src": "manifest.json", "use": "@vercel/static" },
+    { "src": "icon.svg", "use": "@vercel/static" },
     { "src": "merval.html", "use": "@vercel/static" },
     { "src": "cedears.html", "use": "@vercel/static" },
     { "src": "bonos.html", "use": "@vercel/static" },
@@ -11,6 +14,9 @@
   ],
   "routes": [
     { "src": "/api/iol", "dest": "/api/iol.js" },
+    { "src": "/sw.js", "dest": "/sw.js" },
+    { "src": "/manifest.json", "dest": "/manifest.json" },
+    { "src": "/icon.svg", "dest": "/icon.svg" },
     { "src": "/merval.html", "dest": "/merval.html" },
     { "src": "/cedears.html", "dest": "/cedears.html" },
     { "src": "/bonos.html", "dest": "/bonos.html" },
