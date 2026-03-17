@@ -41,7 +41,7 @@ async function getToken(user, pass) {
 }
 
 function safeJson(str) {
-  try { return JSON.parse(str); } catch(e) { return { raw: str, parseError: e.message }; }
+  try { return JSON.parse(str); } catch(e) { return { raw: str.slice(0, 200), parseError: e.message }; }
 }
 
 function parseBody(req) {
@@ -111,9 +111,31 @@ module.exports = async function(req, res) {
       var fechaHasta = params.fechaHasta;
       var ajustada = params.ajustada || 'sinAjustar';
       var token5 = await getToken(process.env.IOL_USER, process.env.IOL_PASS);
-      var path = '/api/v2/' + mercado4 + '/Titulos/' + simbolo2 + '/cotizacion/historica?fechaDesde=' + fechaDesde + '&fechaHasta=' + fechaHasta + '&ajustada=' + ajustada;
-      var r5 = await iolGet(path, token5);
-      res.status(r5.status).json(safeJson(r5.body));
+
+      var paths = [
+        '/api/v2/' + mercado4 + '/Titulos/' + simbolo2 + '/cotizacion/historica?fechaDesde=' + fechaDesde + '&fechaHasta=' + fechaHasta + '&ajustada=' + ajustada,
+        '/api/v2/' + mercado4 + '/Titulos/' + simbolo2 + '/Cotizacion/Historica?fechaDesde=' + fechaDesde + '&fechaHasta=' + fechaHasta + '&ajustada=' + ajustada,
+        '/api/v2/Cotizaciones/' + simbolo2 + '/' + mercado4 + '/historico?fechaDesde=' + fechaDesde + '&fechaHasta=' + fechaHasta,
+        '/api/v2/' + mercado4 + '/Titulos/' + simbolo2 + '/Historico?fechaDesde=' + fechaDesde + '&fechaHasta=' + fechaHasta,
+      ];
+
+      var lastStatus = 400;
+      var lastBody = '';
+      for (var i = 0; i < paths.length; i++) {
+        var r5 = await iolGet(paths[i], token5);
+        lastStatus = r5.status;
+        lastBody = r5.body;
+        if (r5.status === 200 && r5.body && (r5.body.trim()[0] === '[' || r5.body.trim()[0] === '{')) {
+          res.status(200).json(safeJson(r5.body));
+          return;
+        }
+      }
+      res.status(lastStatus).json({
+        error: 'All historical endpoints failed',
+        lastStatus,
+        preview: lastBody.slice(0, 300),
+        triedPaths: paths
+      });
       return;
     }
 
