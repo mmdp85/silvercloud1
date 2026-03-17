@@ -109,8 +109,10 @@ module.exports = async function(req, res) {
       var mercado4 = params.mercado || 'bCBA';
       var fechaDesde = params.fechaDesde;
       var fechaHasta = params.fechaHasta;
+      var ajustada = params.ajustada || 'sinAjustar';
       var token5 = await getToken(process.env.IOL_USER, process.env.IOL_PASS);
-      var r5 = await iolGet('/api/v2/Cotizaciones/' + simbolo2 + '/' + mercado4 + '/historico?fechaDesde=' + fechaDesde + '&fechaHasta=' + fechaHasta + '&ajustada=sinAjustar', token5);
+      var path = '/api/v2/' + mercado4 + '/Titulos/' + simbolo2 + '/cotizacion/historica?fechaDesde=' + fechaDesde + '&fechaHasta=' + fechaHasta + '&ajustada=' + ajustada;
+      var r5 = await iolGet(path, token5);
       res.status(r5.status).json(safeJson(r5.body));
       return;
     }
