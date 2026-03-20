@@ -14,8 +14,8 @@
     { "src": "lecaps.html", "use": "@vercel/static" }
   ],
   "routes": [
-    { "src": "/api/iol", "dest": "/api/iol.js" },
-    { "src": "/sw.js", "dest": "/sw.js" },
+    { "src": "roa-catalogo.html", "use": "@vercel/static" },
+    { "src": "roa-cliente.html", "use": "@vercel/static" },
     { "src": "/manifest.json", "dest": "/manifest.json" },
     { "src": "/icon.svg", "dest": "/icon.svg" },
     { "src": "/cumpleanos.html", "dest": "/cumpleanos.html" },
