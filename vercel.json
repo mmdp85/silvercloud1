@@ -23,7 +23,7 @@
     { "src": "/cedears.html", "dest": "/cedears.html" },
     { "src": "/bonos.html", "dest": "/bonos.html" },
     { "src": "/bonospesos.html", "dest": "/bonospesos.html" },
-    { "src": "/lecaps.html", "dest": "/lecaps.html" },
-    { "src": "/(.*)", "dest": "/index.html" }
+    
+   
   ]
 }
