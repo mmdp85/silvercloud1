@@ -1,0 +1,1116 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Generador de Propuesta · Silver Cloud</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<style>
+:root {
+  --navy:    #0D1B2A;
+  --navy2:   #162235;
+  --navy3:   #1e2f44;
+  --gold:    #C8973A;
+  --gold2:   #e8b85a;
+  --gold-lt: rgba(200,151,58,0.12);
+  --cream:   #F7F3EC;
+  --cream2:  #EDE8DF;
+  --border:  #2a3d54;
+  --text:    #E8E4DC;
+  --muted:   #7A8FA6;
+  --dim:     #3d5166;
+  --green:   #4CAF7D;
+  --blue:    #5B9BD5;
+  --red:     #E05757;
+  --radius:  10px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; }
+body {
+  background: var(--navy);
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  display: flex;
+  min-height: 100vh;
+}
+
+/* ── EDITOR PANEL ── */
+.editor {
+  width: 420px;
+  min-width: 420px;
+  background: var(--navy2);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow-y: auto;
+  position: sticky;
+  top: 0;
+}
+.editor-header {
+  padding: 24px 24px 16px;
+  border-bottom: 1px solid var(--border);
+}
+.editor-logo {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--gold);
+  letter-spacing: 0.5px;
+}
+.editor-sub {
+  font-family: 'DM Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-top: 3px;
+}
+.editor-body { padding: 20px 24px; flex: 1; }
+.section-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin: 20px 0 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.section-label::after { content:''; flex:1; height:1px; background:var(--border); }
+.section-label:first-child { margin-top: 0; }
+
+.fg { display: flex; flex-direction: column; gap: 4px; margin-bottom: 12px; }
+.fg label { font-size: 10px; color: var(--muted); font-family: 'DM Mono', monospace; letter-spacing: 1px; text-transform: uppercase; }
+.fg input, .fg select, .fg textarea {
+  background: var(--navy3);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 8px 11px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  outline: none;
+  border-radius: 6px;
+  transition: border-color 0.15s;
+  width: 100%;
+}
+.fg textarea { resize: vertical; min-height: 60px; }
+.fg input:focus, .fg select:focus, .fg textarea:focus { border-color: var(--gold); }
+.fg select option { background: var(--navy2); }
+
+.split-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+/* Funds list */
+.funds-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px; }
+.fund-item {
+  background: var(--navy3);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px;
+  position: relative;
+}
+.fund-item-header { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.fund-badge {
+  font-family: 'DM Mono', monospace;
+  font-size: 9px;
+  font-weight: 500;
+  padding: 2px 7px;
+  border-radius: 3px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+.fund-badge.usd { background: rgba(91,155,213,0.15); color: var(--blue); }
+.fund-badge.ars { background: rgba(76,175,125,0.15); color: var(--green); }
+.fund-inputs { display: grid; grid-template-columns: 1fr 80px; gap: 8px; }
+.fund-inputs input {
+  background: var(--navy2);
+  border: 1px solid var(--dim);
+  color: var(--text);
+  padding: 6px 9px;
+  font-size: 12px;
+  font-family: 'DM Sans', sans-serif;
+  outline: none;
+  border-radius: 5px;
+  width: 100%;
+  transition: border-color 0.15s;
+}
+.fund-inputs input:focus { border-color: var(--gold); }
+.fund-desc input { grid-column: 1 / -1; }
+.fund-del {
+  position: absolute;
+  top: 8px; right: 8px;
+  background: none;
+  border: none;
+  color: var(--dim);
+  cursor: pointer;
+  font-size: 16px;
+  line-height: 1;
+  transition: color 0.15s;
+  padding: 2px;
+}
+.fund-del:hover { color: var(--red); }
+
+.btn-add-fund {
+  width: 100%;
+  background: none;
+  border: 1px dashed var(--border);
+  color: var(--muted);
+  padding: 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 12px;
+  font-family: 'DM Sans', sans-serif;
+  transition: all 0.15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+.btn-add-fund:hover { border-color: var(--gold); color: var(--gold); }
+
+/* Action buttons */
+.editor-footer {
+  padding: 16px 24px 24px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.btn-pdf {
+  background: var(--gold);
+  color: #000;
+  border: none;
+  padding: 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: 'DM Sans', sans-serif;
+  transition: all 0.15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.btn-pdf:hover { background: var(--gold2); transform: translateY(-1px); }
+.btn-preview {
+  background: var(--navy3);
+  color: var(--text);
+  border: 1px solid var(--border);
+  padding: 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 12px;
+  font-family: 'DM Sans', sans-serif;
+  transition: all 0.15s;
+}
+.btn-preview:hover { border-color: var(--gold); color: var(--gold); }
+
+/* ── PREVIEW PANEL ── */
+.preview-wrap {
+  flex: 1;
+  background: #C8C0B4;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 32px 24px;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+.preview-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: #6B635A;
+  margin-bottom: 16px;
+  align-self: flex-start;
+}
+
+/* ══════════════════════════════════════════════════
+   PDF DOCUMENT STYLES
+══════════════════════════════════════════════════ */
+#pdf-doc {
+  width: 794px;
+  min-height: 1123px;
+  background: #FDFAF5;
+  font-family: 'DM Sans', sans-serif;
+  color: #1A1A2E;
+  position: relative;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+}
+
+/* Header */
+.pdf-header {
+  background: #0D1B2A;
+  padding: 40px 56px 32px;
+  position: relative;
+  overflow: hidden;
+}
+.pdf-header::before {
+  content: '';
+  position: absolute;
+  top: -40px; right: -40px;
+  width: 220px; height: 220px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(200,151,58,0.12) 0%, transparent 70%);
+}
+.pdf-header::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #C8973A, #e8b85a, #C8973A);
+}
+.pdf-logo-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 28px;
+}
+.pdf-logo-text {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 28px;
+  font-weight: 600;
+  color: #C8973A;
+  letter-spacing: 1px;
+}
+.pdf-logo-sub {
+  font-family: 'DM Mono', monospace;
+  font-size: 8px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.4);
+  margin-top: 2px;
+}
+.pdf-date-badge {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  color: rgba(255,255,255,0.5);
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.1);
+  padding: 5px 12px;
+  border-radius: 4px;
+}
+.pdf-title-block {}
+.pdf-proposal-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  color: #C8973A;
+  margin-bottom: 6px;
+}
+.pdf-main-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 34px;
+  font-weight: 300;
+  color: #fff;
+  line-height: 1.2;
+  margin-bottom: 16px;
+}
+.pdf-client-row {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+.pdf-client-chip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(200,151,58,0.12);
+  border: 1px solid rgba(200,151,58,0.25);
+  padding: 6px 14px;
+  border-radius: 4px;
+}
+.pdf-client-chip-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 8px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: rgba(200,151,58,0.7);
+}
+.pdf-client-chip-value {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  color: #fff;
+}
+.pdf-perfil-chip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.1);
+  padding: 6px 14px;
+  border-radius: 4px;
+}
+.pdf-perfil-chip-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 8px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.4);
+}
+.pdf-perfil-chip-value {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  color: #fff;
+}
+
+/* Body */
+.pdf-body { padding: 40px 56px 48px; }
+
+/* Intro */
+.pdf-intro {
+  margin-bottom: 36px;
+  padding-bottom: 28px;
+  border-bottom: 1px solid #E8E0D4;
+}
+.pdf-intro p {
+  font-size: 13px;
+  line-height: 1.75;
+  color: #3D3D5C;
+}
+
+/* Allocation bar */
+.pdf-alloc-section { margin-bottom: 36px; }
+.pdf-section-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 18px;
+  font-weight: 500;
+  color: #0D1B2A;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.pdf-section-title::after { content:''; flex:1; height:1px; background:#E8E0D4; }
+
+.pdf-alloc-bar-wrap {
+  background: #F0EBE2;
+  border-radius: 8px;
+  height: 42px;
+  overflow: hidden;
+  display: flex;
+  margin-bottom: 12px;
+}
+.pdf-alloc-seg {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: width 0.3s;
+}
+.pdf-alloc-seg.usd { background: #1A3A5C; }
+.pdf-alloc-seg.ars { background: #2A6644; }
+.pdf-alloc-seg-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  font-weight: 500;
+  color: #fff;
+  letter-spacing: 1px;
+}
+.pdf-alloc-legend {
+  display: flex;
+  gap: 24px;
+}
+.pdf-alloc-leg-item {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+.pdf-alloc-leg-dot {
+  width: 10px; height: 10px;
+  border-radius: 2px;
+}
+.pdf-alloc-leg-dot.usd { background: #1A3A5C; }
+.pdf-alloc-leg-dot.ars { background: #2A6644; }
+.pdf-alloc-leg-text {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  color: #5A5A7A;
+}
+
+/* Funds section */
+.pdf-funds-section { margin-bottom: 32px; }
+.pdf-funds-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+.pdf-funds-badge {
+  font-family: 'DM Mono', monospace;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  padding: 3px 10px;
+  border-radius: 3px;
+}
+.pdf-funds-badge.usd { background: #EAF0F8; color: #1A3A5C; }
+.pdf-funds-badge.ars { background: #EAF4EE; color: #2A6644; }
+.pdf-funds-pct {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 22px;
+  font-weight: 500;
+  color: #0D1B2A;
+}
+.pdf-funds-pct-label {
+  font-size: 11px;
+  color: #8A8AAA;
+  font-family: 'DM Mono', monospace;
+}
+
+.pdf-fund-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 0;
+  padding: 14px 16px;
+  border: 1px solid #E8E0D4;
+  border-radius: 8px;
+  margin-bottom: 8px;
+  background: #FDFAF5;
+  position: relative;
+}
+.pdf-fund-row::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 3px;
+  border-radius: 8px 0 0 8px;
+}
+.pdf-fund-row.usd::before { background: #1A3A5C; }
+.pdf-fund-row.ars::before { background: #2A6644; }
+.pdf-fund-info { flex: 1; padding-left: 12px; }
+.pdf-fund-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: #1A1A2E;
+  margin-bottom: 3px;
+}
+.pdf-fund-desc {
+  font-size: 11px;
+  color: #6A6A8A;
+  line-height: 1.5;
+}
+.pdf-fund-pct-wrap {
+  text-align: right;
+  flex-shrink: 0;
+  min-width: 60px;
+}
+.pdf-fund-pct {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 22px;
+  font-weight: 500;
+  line-height: 1;
+}
+.pdf-fund-pct.usd { color: #1A3A5C; }
+.pdf-fund-pct.ars { color: #2A6644; }
+.pdf-fund-pct-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 8px;
+  color: #9A9AAA;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* Notes */
+.pdf-notes-box {
+  background: #F0EBE2;
+  border-left: 3px solid #C8973A;
+  border-radius: 0 8px 8px 0;
+  padding: 14px 18px;
+  margin-bottom: 32px;
+}
+.pdf-notes-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 8px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: #C8973A;
+  margin-bottom: 6px;
+}
+.pdf-notes-text {
+  font-size: 12px;
+  color: #4A4A6A;
+  line-height: 1.65;
+}
+
+/* Footer */
+.pdf-footer {
+  background: #F5F0E8;
+  border-top: 1px solid #E8E0D4;
+  padding: 20px 56px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.pdf-footer-left {
+  font-family: 'DM Mono', monospace;
+  font-size: 9px;
+  color: #8A8AAA;
+  letter-spacing: 1px;
+}
+.pdf-footer-right {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 13px;
+  color: #C8973A;
+  font-style: italic;
+}
+.pdf-disclaimer {
+  font-size: 9px;
+  color: #AAA;
+  line-height: 1.5;
+  padding: 16px 56px;
+  font-family: 'DM Mono', monospace;
+  border-top: 1px solid #E8E0D4;
+}
+
+/* Validation */
+.pct-warning {
+  font-size: 11px;
+  color: var(--red);
+  font-family: 'DM Mono', monospace;
+  margin-top: 4px;
+  display: none;
+}
+.pct-warning.show { display: block; }
+.pct-ok {
+  font-size: 11px;
+  color: var(--green);
+  font-family: 'DM Mono', monospace;
+  margin-top: 4px;
+}
+
+@media print {
+  .editor { display: none !important; }
+  .preview-wrap { background: none !important; padding: 0 !important; display: block !important; }
+  #pdf-page2 { margin-top: 0 !important; box-shadow: none !important; page-break-before: always; }
+  #pdf-doc { box-shadow: none !important; }
+  body { display: block !important; }
+  @page { margin: 0; size: A4; }
+}
+</style>
+</head>
+<body>
+
+<!-- ══ EDITOR ══ -->
+<div class="editor">
+  <div class="editor-header">
+    <div class="editor-logo">Silver Cloud</div>
+    <div class="editor-sub">Generador de Propuesta</div>
+  </div>
+  <div class="editor-body">
+
+    <!-- Cliente -->
+    <div class="section-label">Cliente</div>
+    <div class="fg">
+      <label>Nombre del cliente</label>
+      <input type="text" id="e-nombre" placeholder="Ej: Juan García" oninput="update()">
+    </div>
+    <div class="split-row">
+      <div class="fg">
+        <label>Perfil de riesgo</label>
+        <select id="e-perfil" onchange="update()">
+          <option value="Conservador">Conservador</option>
+          <option value="Moderado" selected>Moderado</option>
+          <option value="Moderado-Agresivo">Moderado-Agresivo</option>
+          <option value="Agresivo">Agresivo</option>
+        </select>
+      </div>
+      <div class="fg">
+        <label>Fecha</label>
+        <input type="date" id="e-fecha" oninput="update()">
+      </div>
+    </div>
+
+    <!-- Asignación -->
+    <div class="section-label">Asignación</div>
+    <div class="split-row">
+      <div class="fg">
+        <label>% Dólares (USD)</label>
+        <input type="number" id="e-pct-usd" value="80" min="0" max="100" step="5" oninput="syncPct('usd')">
+      </div>
+      <div class="fg">
+        <label>% Pesos (ARS)</label>
+        <input type="number" id="e-pct-ars" value="20" min="0" max="100" step="5" oninput="syncPct('ars')">
+      </div>
+    </div>
+    <div id="pct-warn" class="pct-warning">⚠ La suma debe ser 100%</div>
+
+    <!-- Fondos USD -->
+    <div class="section-label">Fondos en Dólares</div>
+    <div class="funds-list" id="funds-usd"></div>
+    <button class="btn-add-fund" onclick="addFund('usd')">+ Agregar fondo USD</button>
+
+    <!-- Fondos ARS -->
+    <div class="section-label" style="margin-top:20px;">Fondos en Pesos</div>
+    <div class="funds-list" id="funds-ars"></div>
+    <button class="btn-add-fund" onclick="addFund('ars')">+ Agregar fondo ARS</button>
+
+    <!-- Intro / Notas -->
+    <div class="section-label" style="margin-top:20px;">Texto de apertura</div>
+    <div class="fg">
+      <textarea id="e-intro" rows="3" oninput="update()" placeholder="Presentación de la propuesta..."></textarea>
+    </div>
+    <div class="section-label">Observaciones</div>
+    <div class="fg">
+      <textarea id="e-notas" rows="3" oninput="update()" placeholder="Notas adicionales, condiciones, etc."></textarea>
+    </div>
+
+  </div>
+  <div class="editor-footer">
+    <button class="btn-pdf" onclick="printPDF()">🖨 Guardar como PDF</button>
+    <button class="btn-preview" onclick="update()">↺ Actualizar vista previa</button>
+  </div>
+</div>
+
+<!-- ══ PREVIEW ══ -->
+<div class="preview-wrap">
+  <div class="preview-label">Vista previa del documento</div>
+  <div id="pdf-doc" style="display:block;">
+
+    <!-- HEADER -->
+    <div class="pdf-header">
+      <div class="pdf-logo-row">
+        <div>
+          <div class="pdf-logo-text">Silver Cloud</div>
+          <div class="pdf-logo-sub">Asset Management · AAGI · CNV</div>
+        </div>
+        <div class="pdf-date-badge" id="p-fecha">—</div>
+      </div>
+      <div class="pdf-title-block">
+        <div class="pdf-proposal-label">Propuesta de Inversión</div>
+
+        <div class="pdf-client-row">
+          <div class="pdf-client-chip">
+            <div>
+              <div class="pdf-client-chip-label">Cliente</div>
+              <div class="pdf-client-chip-value" id="p-nombre">—</div>
+            </div>
+          </div>
+          <div class="pdf-perfil-chip">
+            <div>
+              <div class="pdf-perfil-chip-label">Perfil</div>
+              <div class="pdf-perfil-chip-value" id="p-perfil">Moderado</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- BODY -->
+    <div class="pdf-body">
+
+      <!-- Intro -->
+      <div class="pdf-intro" id="p-intro-wrap">
+        <p id="p-intro"></p>
+      </div>
+
+      <!-- Asignación -->
+      <div class="pdf-alloc-section">
+        <div class="pdf-section-title">Asignación estratégica</div>
+        <div class="pdf-alloc-bar-wrap">
+          <div class="pdf-alloc-seg usd" id="p-bar-usd" style="width:80%">
+            <span class="pdf-alloc-seg-label">USD <span id="p-bar-usd-pct">80%</span></span>
+          </div>
+          <div class="pdf-alloc-seg ars" id="p-bar-ars" style="width:20%">
+            <span class="pdf-alloc-seg-label">ARS <span id="p-bar-ars-pct">20%</span></span>
+          </div>
+        </div>
+        <div class="pdf-alloc-legend">
+          <div class="pdf-alloc-leg-item">
+            <div class="pdf-alloc-leg-dot usd"></div>
+            <span class="pdf-alloc-leg-text">Cartera en Dólares</span>
+          </div>
+          <div class="pdf-alloc-leg-item">
+            <div class="pdf-alloc-leg-dot ars"></div>
+            <span class="pdf-alloc-leg-text">Cartera en Pesos</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Fondos USD -->
+      <div class="pdf-funds-section" id="p-section-usd">
+        <div class="pdf-funds-header">
+          <span class="pdf-funds-badge usd">Dólares</span>
+          <span class="pdf-funds-pct" id="p-pct-usd-title">80%</span>
+          <span class="pdf-funds-pct-label">de la cartera</span>
+        </div>
+        <div id="p-funds-usd"></div>
+      </div>
+
+      <!-- Fondos ARS -->
+      <div class="pdf-funds-section" id="p-section-ars">
+        <div class="pdf-funds-header">
+          <span class="pdf-funds-badge ars">Pesos</span>
+          <span class="pdf-funds-pct" id="p-pct-ars-title">20%</span>
+          <span class="pdf-funds-pct-label">de la cartera</span>
+        </div>
+        <div id="p-funds-ars"></div>
+      </div>
+
+      <!-- Notas -->
+      <div class="pdf-notes-box" id="p-notas-wrap" style="display:none;word-break:break-word;overflow:hidden;">
+        <div class="pdf-notes-label">Observaciones</div>
+        <div class="pdf-notes-text" id="p-notas"></div>
+      </div>
+
+    </div>
+
+    <!-- FOOTER -->
+    <div class="pdf-footer">
+      <div class="pdf-footer-left">Silver Cloud Asset Management · Primer Agente Asesor Global de Inversión en Argentina · CNV</div>
+      <div class="pdf-footer-right">Gestión patrimonial de excelencia</div>
+    </div>
+    <div class="pdf-disclaimer">
+      Esta propuesta tiene carácter informativo y no constituye una oferta pública de valores. Las inversiones en mercados financieros implican riesgos, incluida la posible pérdida del capital invertido. Rendimientos pasados no garantizan resultados futuros. Silver Cloud Asset Management actúa como Agente Asesor Global de Inversiones registrado ante la CNV.
+    </div>
+
+  <!-- ══ PÁGINA 2 ══ -->
+  <div id="pdf-page2" style="width:794px;min-height:1123px;background:#FDFAF5;position:relative;margin-top:32px;box-shadow:0 20px 60px rgba(0,0,0,0.25);display:block;clear:both;">
+    
+    <!-- Header pág 2 -->
+    <div style="background:#0D1B2A;padding:24px 56px;position:relative;overflow:hidden;">
+      <div style="position:absolute;bottom:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#C8973A,#e8b85a,#C8973A);"></div>
+      <div style="display:flex;align-items:center;justify-content:space-between;">
+        <div>
+          <div style="font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:600;color:#C8973A;">Silver Cloud</div>
+          <div style="font-family:'DM Mono',monospace;font-size:8px;letter-spacing:3px;color:rgba(255,255,255,0.35);text-transform:uppercase;margin-top:2px;">Composición del portafolio</div>
+        </div>
+        <div style="font-family:'DM Mono',monospace;font-size:10px;color:rgba(255,255,255,0.4);" id="p-fecha2"></div>
+      </div>
+    </div>
+
+    <!-- Body pág 2 -->
+    <div style="padding:48px 56px;display:flex;flex-direction:column;justify-content:center;min-height:900px;">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:32px;">
+        <span style="font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:500;color:#0D1B2A;white-space:nowrap;">Composición del portafolio</span>
+        <span style="flex:1;height:1px;background:#E8E0D4;display:block;"></span>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:32px;align-items:start;">
+        <div style="background:#F5F0E8;border:1px solid #E8E0D4;border-radius:10px;padding:24px;text-align:center;">
+          <div style="font-family:'DM Mono',monospace;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#8A8AAA;margin-bottom:16px;">Por moneda</div>
+          <canvas id="chart-moneda" width="260" height="260" style="margin:0 auto;display:block;"></canvas>
+          <div id="legend-moneda" style="margin-top:16px;display:flex;flex-direction:column;gap:8px;text-align:left;"></div>
+        </div>
+        <div style="background:#F5F0E8;border:1px solid #E8E0D4;border-radius:10px;padding:24px;text-align:center;">
+          <div style="font-family:'DM Mono',monospace;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#8A8AAA;margin-bottom:16px;">Por activo</div>
+          <canvas id="chart-activos" width="260" height="260" style="margin:0 auto;display:block;"></canvas>
+          <div id="legend-activos" style="margin-top:16px;display:flex;flex-direction:column;gap:8px;text-align:left;"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer pág 2 -->
+    <div style="position:absolute;bottom:0;left:0;right:0;background:#F5F0E8;border-top:1px solid #E8E0D4;padding:16px 56px;display:flex;align-items:center;justify-content:space-between;">
+      <div style="font-family:'DM Mono',monospace;font-size:9px;color:#8A8AAA;">Silver Cloud Asset Management · AAGI · CNV</div>
+      <div style="font-family:'Cormorant Garamond',serif;font-size:13px;color:#C8973A;font-style:italic;">Gestión patrimonial de excelencia</div>
+    </div>
+  </div>
+
+  </div>
+</div>
+
+<script>
+// ── State ──────────────────────────────────────
+let fundsUSD = [], fundsARS = [], fid = 0;
+
+// ── Init ───────────────────────────────────────
+window.addEventListener('load', () => {
+  // Set today's date
+  const today = new Date();
+  document.getElementById('e-fecha').value = today.toISOString().split('T')[0];
+
+  // Default funds
+  addFund('usd', { nombre:'Galileo Event Driven (GED)', pct:'40', desc:'Fondo multimercado en dólares con sesgo a renta variable internacional y activos alternativos.' });
+  addFund('usd', { nombre:'Galileo Fixed Income (GFI)', pct:'40', desc:'Fondo de renta fija en dólares con exposición a bonos corporativos y soberanos emergentes.' });
+  addFund('ars', { nombre:'Galileo Multimercado IV (GAMM4)', pct:'20', desc:'Fondo diversificado en pesos con exposición a renta fija, acciones locales y activos CER.' });
+
+  update();
+  setTimeout(drawCharts, 600);
+});
+
+// ── Sync porcentajes ───────────────────────────
+function syncPct(changed) {
+  const usdEl = document.getElementById('e-pct-usd');
+  const arsEl = document.getElementById('e-pct-ars');
+  const warn  = document.getElementById('pct-warn');
+  if (changed === 'usd') {
+    const v = Math.min(100, Math.max(0, parseInt(usdEl.value) || 0));
+    arsEl.value = 100 - v;
+    usdEl.value = v;
+  } else {
+    const v = Math.min(100, Math.max(0, parseInt(arsEl.value) || 0));
+    usdEl.value = 100 - v;
+    arsEl.value = v;
+  }
+  const sum = (parseInt(usdEl.value)||0) + (parseInt(arsEl.value)||0);
+  warn.classList.toggle('show', sum !== 100);
+  update();
+}
+
+// ── Add fund ───────────────────────────────────
+function addFund(tipo, preset = {}) {
+  const id = ++fid;
+  const fund = { id, tipo, nombre: preset.nombre || '', pct: preset.pct || '', desc: preset.desc || '' };
+  if (tipo === 'usd') fundsUSD.push(fund);
+  else fundsARS.push(fund);
+  renderFundEditor(tipo);
+  update();
+  setTimeout(drawCharts, 50);
+}
+
+function removeFund(id, tipo) {
+  if (tipo === 'usd') fundsUSD = fundsUSD.filter(f => f.id !== id);
+  else fundsARS = fundsARS.filter(f => f.id !== id);
+  renderFundEditor(tipo);
+  update();
+  setTimeout(drawCharts, 50);
+}
+
+function renderFundEditor(tipo) {
+  const container = document.getElementById('funds-' + tipo);
+  const list = tipo === 'usd' ? fundsUSD : fundsARS;
+  container.innerHTML = list.map(f => `
+    <div class="fund-item">
+      <button class="fund-del" onclick="removeFund(${f.id},'${tipo}')">×</button>
+      <div class="fund-item-header">
+        <span class="fund-badge ${tipo}">${tipo.toUpperCase()}</span>
+        <span style="font-size:11px;color:var(--muted);font-family:'DM Mono',monospace;">Fondo ${list.indexOf(f)+1}</span>
+      </div>
+      <div class="fund-inputs">
+        <input placeholder="Nombre del fondo" value="${esc(f.nombre)}" oninput="updateFund(${f.id},'${tipo}','nombre',this.value);setTimeout(drawCharts,50);">
+        <input placeholder="%" value="${esc(f.pct)}" oninput="updateFund(${f.id},'${tipo}','pct',this.value);setTimeout(drawCharts,50);" style="text-align:center;">
+      </div>
+      <div style="margin-top:6px;">
+        <textarea placeholder="Descripción breve" oninput="updateFund(${f.id},'${tipo}','desc',this.value)" rows="2" style="width:100%;background:var(--navy2);border:1px solid var(--dim);color:var(--text);padding:6px 9px;font-size:12px;font-family:'DM Sans',sans-serif;outline:none;border-radius:5px;resize:none;transition:border-color 0.15s;">${esc(f.desc)}</textarea>
+      </div>
+    </div>
+  `).join('');
+}
+
+function updateFund(id, tipo, field, val) {
+  const list = tipo === 'usd' ? fundsUSD : fundsARS;
+  const f = list.find(f => f.id === id);
+  if (f) { f[field] = val; update(); }
+}
+
+function esc(s) { return String(s||'').replace(/"/g,'&quot;').replace(/</g,'&lt;'); }
+
+// ── Update preview ─────────────────────────────
+function update() {
+  const nombre = document.getElementById('e-nombre').value || '—';
+  const perfil = document.getElementById('e-perfil').value;
+  const fechaVal = document.getElementById('e-fecha').value;
+  const pctUSD = parseInt(document.getElementById('e-pct-usd').value) || 0;
+  const pctARS = parseInt(document.getElementById('e-pct-ars').value) || 0;
+  const intro = document.getElementById('e-intro').value;
+  const notas = document.getElementById('e-notas').value;
+
+  // Header
+  document.getElementById('p-nombre').textContent = nombre;
+  document.getElementById('p-perfil').textContent = perfil;
+
+  // Date
+  if (fechaVal) {
+    const d = new Date(fechaVal + 'T12:00:00');
+    const fechaStr = d.toLocaleDateString('es-AR', { day:'2-digit', month:'long', year:'numeric' });
+    document.getElementById('p-fecha').textContent = fechaStr;
+    const f2 = document.getElementById('p-fecha2'); if(f2) f2.textContent = fechaStr;
+  }
+
+  // Allocation bar
+  document.getElementById('p-bar-usd').style.width = pctUSD + '%';
+  document.getElementById('p-bar-ars').style.width = pctARS + '%';
+  document.getElementById('p-bar-usd-pct').textContent = pctUSD + '%';
+  document.getElementById('p-bar-ars-pct').textContent = pctARS + '%';
+  document.getElementById('p-pct-usd-title').textContent = pctUSD + '%';
+  document.getElementById('p-pct-ars-title').textContent = pctARS + '%';
+
+  // Intro
+  const introWrap = document.getElementById('p-intro-wrap');
+  if (intro) {
+    document.getElementById('p-intro').textContent = intro;
+    introWrap.style.display = '';
+  } else {
+    const defaultIntro = `Estimado/a ${nombre === '—' ? 'cliente/a' : nombre}, a continuación le presentamos nuestra propuesta de inversión personalizada, elaborada en función de su perfil ${perfil.toLowerCase()} y sus objetivos patrimoniales. La estrategia propuesta busca optimizar el rendimiento ajustado al riesgo, diversificando su portafolio entre instrumentos en dólares y pesos argentinos.`;
+    document.getElementById('p-intro').textContent = defaultIntro;
+    introWrap.style.display = '';
+  }
+
+  // Funds USD
+  const fusdEl = document.getElementById('p-funds-usd');
+  fusdEl.innerHTML = fundsUSD.map(f => `
+    <div class="pdf-fund-row usd">
+      <div class="pdf-fund-info">
+        <div class="pdf-fund-name">${f.nombre || 'Fondo sin nombre'}</div>
+        ${f.desc ? `<div class="pdf-fund-desc" style="display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">${f.desc}</div>` : ''}
+      </div>
+      ${f.pct ? `<div class="pdf-fund-pct-wrap"><div class="pdf-fund-pct usd">${f.pct}%</div><div class="pdf-fund-pct-label">cartera</div></div>` : ''}
+    </div>
+  `).join('') || '<div style="color:#AAA;font-size:12px;padding:8px 0;">Sin fondos cargados</div>';
+
+  // Funds ARS
+  const farsEl = document.getElementById('p-funds-ars');
+  farsEl.innerHTML = fundsARS.map(f => `
+    <div class="pdf-fund-row ars">
+      <div class="pdf-fund-info">
+        <div class="pdf-fund-name">${f.nombre || 'Fondo sin nombre'}</div>
+        ${f.desc ? `<div class="pdf-fund-desc" style="display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">${f.desc}</div>` : ''}
+      </div>
+      ${f.pct ? `<div class="pdf-fund-pct-wrap"><div class="pdf-fund-pct ars">${f.pct}%</div><div class="pdf-fund-pct-label">cartera</div></div>` : ''}
+    </div>
+  `).join('') || '<div style="color:#AAA;font-size:12px;padding:8px 0;">Sin fondos cargados</div>';
+
+  // Notas
+  const notasWrap = document.getElementById('p-notas-wrap');
+  if (notas) {
+    document.getElementById('p-notas').textContent = notas;
+    notasWrap.style.display = '';
+  } else {
+    notasWrap.style.display = 'none';
+  }
+}
+
+
+// ── Draw charts ────────────────────────────────
+function drawCharts() {
+  const pctUSD = parseInt(document.getElementById('e-pct-usd').value) || 0;
+  const pctARS = parseInt(document.getElementById('e-pct-ars').value) || 0;
+
+  const COLORS_USD = ['#1A3A5C','#2E5F8A','#4A90C4','#6AAED6','#9ECAE1'];
+  const COLORS_ARS = ['#2A6644','#3D8B5E','#5AAF7E','#82C99E','#B3DBBE'];
+
+  drawDonut('chart-moneda', 'legend-moneda', [
+    { label: 'Dólares', value: pctUSD, color: '#1A3A5C' },
+    { label: 'Pesos',   value: pctARS, color: '#2A6644' },
+  ]);
+
+  const allFunds = [
+    ...fundsUSD.map((f,i) => ({ label: f.nombre || ('USD '+(i+1)), value: parseFloat(f.pct)||0, color: COLORS_USD[i % COLORS_USD.length] })),
+    ...fundsARS.map((f,i) => ({ label: f.nombre || ('ARS '+(i+1)), value: parseFloat(f.pct)||0, color: COLORS_ARS[i % COLORS_ARS.length] })),
+  ].filter(f => f.value > 0);
+
+  drawDonut('chart-activos', 'legend-activos', allFunds);
+}
+
+function drawDonut(canvasId, legendId, items) {
+  const canvas = document.getElementById(canvasId);
+  if (!canvas || canvas.offsetParent === null) { setTimeout(() => drawDonut(canvasId, legendId, items), 100); return; }
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  const cx = W/2, cy = H/2;
+  const R = Math.min(W,H)/2 - 10; const innerR = R * 0.45;
+  ctx.clearRect(0, 0, W, H);
+
+  const total = items.reduce((s,i) => s + i.value, 0);
+  if (!total) return;
+
+  let angle = -Math.PI / 2;
+  items.forEach(item => {
+    const sweep = (item.value / total) * 2 * Math.PI;
+    
+    // Slice
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.arc(cx, cy, R, angle, angle + sweep);
+    ctx.closePath();
+    ctx.fillStyle = item.color;
+    ctx.fill();
+    ctx.strokeStyle = '#FDFAF5';
+    ctx.lineWidth = 2.5;
+    ctx.stroke();
+
+    // Percentage label inside slice (only if slice is big enough)
+    if (sweep > 0.35) {
+      const midAngle = angle + sweep / 2;
+      const labelR = (R + innerR) / 2;
+      const lx = cx + labelR * Math.cos(midAngle);
+      const ly = cy + labelR * Math.sin(midAngle);
+      ctx.fillStyle = '#fff';
+      ctx.font = 'bold 10px DM Mono, monospace';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(Math.round(item.value) + '%', lx, ly);
+    }
+
+    angle += sweep;
+  });
+
+  // Donut hole
+  ctx.beginPath();
+  ctx.arc(cx, cy, innerR, 0, 2*Math.PI);
+  ctx.fillStyle = '#F5F0E8';
+  ctx.fill();
+
+  // Legend
+  const legendEl = document.getElementById(legendId);
+  if (legendEl) {
+    legendEl.innerHTML = items.map(item => `
+      <div style="display:flex;align-items:center;gap:7px;">
+        <div style="width:10px;height:10px;border-radius:2px;background:${item.color};flex-shrink:0;"></div>
+        <span style="font-family:'DM Sans',sans-serif;font-size:10px;color:#3A3A5A;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${item.label}</span>
+        <span style="font-family:'DM Mono',monospace;font-size:10px;font-weight:600;color:#1A1A2E;">${item.value}%</span>
+      </div>
+    `).join('');
+  }
+}
+
+// ── Export PDF ─────────────────────────────────
+function printPDF() {
+  update();
+  drawCharts();
+  setTimeout(function() {
+    // Snapshot canvases
+    var snap1 = '', snap2 = '';
+    var c1 = document.getElementById('chart-moneda');
+    var c2 = document.getElementById('chart-activos');
+    if (c1) snap1 = c1.toDataURL('image/png');
+    if (c2) snap2 = c2.toDataURL('image/png');
+
+    // Clone both pages
+    var p1 = document.getElementById('pdf-doc').cloneNode(true);
+    var p2 = document.getElementById('pdf-page2').cloneNode(true);
+
+    // Replace canvas in clones with img snapshots
+    // Replace canvas in clones with snapshots
+    function replaceCanvas(page, id, snap) {
+      var canvas = page.querySelector('#' + id);
+      if (!canvas || !snap) return;
+      var img = document.createElement('img');
+      img.src = snap;
+      img.width = canvas.width;
+      img.height = canvas.height;
+      img.style.cssText = canvas.style.cssText;
+      canvas.parentNode.replaceChild(img, canvas);
+    }
+    replaceCanvas(p1, 'chart-moneda', snap1);
+    replaceCanvas(p1, 'chart-activos', snap2);
+    replaceCanvas(p2, 'chart-moneda', snap1);
+    replaceCanvas(p2, 'chart-activos', snap2);
+
+    // Get inline CSS
+    var styleEl = document.querySelector('style');
+    var styles = styleEl ? styleEl.innerHTML : '';
+
+    // Open print window
+    var w = window.open('', '_blank');
+    var fonts = '<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">';
+    var printCSS = '<style>*{box-sizing:border-box;margin:0;padding:0;}body{background:#fff;}@page{margin:0;size:A4;}@media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact;}}#pdf-page2{page-break-before:always;margin-top:0!important;box-shadow:none!important;}</style>';
+    w.document.open();
+    w.document.write('<!DOCTYPE html><html><head><meta charset="UTF-8">' + fonts + printCSS + '<style>' + styles + '</style></head><body>' + p1.outerHTML + p2.outerHTML + '</body></html>');
+    w.document.close();
+    setTimeout(function() { w.focus(); w.print(); }, 1500);
+  }, 400);
+}
+</script>
+</body>
+</html>
