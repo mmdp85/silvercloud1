@@ -1,0 +1,876 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Calculadora ROA — Fondos FCI</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;700&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --navy: #0E1A2B; --gold: #B8924A; --gold-light: #D4AA6A; --cream: #F5F0E8;
+    --parch: #FAF7F2; --green: #2D7D52; --blue: #1B5E8A; --red: #A03030;
+    --muted: #B0A898; --text: #1a1a1a; --border: rgba(184,146,74,0.22);
+  }
+  body { font-family: 'Jost', sans-serif; background: var(--cream); color: var(--text); font-size: 14px; }
+
+  /* HEADER */
+  .header { background: var(--navy); padding: 28px 40px 24px; display: flex; align-items: flex-end; justify-content: space-between; }
+  .header-title { font-family: 'Playfair Display', serif; font-size: 1.7rem; font-weight: 400; color: #fff; line-height: 1.2; }
+  .header-sub { font-size: 0.6rem; letter-spacing: 0.22em; text-transform: uppercase; color: rgba(255,255,255,0.3); margin-top: 6px; }
+  .header-gold { height: 1px; background: linear-gradient(90deg, var(--gold), transparent); margin-top: 20px; }
+  .badge { padding: 5px 14px; border: 1px solid rgba(184,146,74,0.4); font-size: 0.62rem; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--gold-light); }
+
+  /* CONTROLS */
+  .controls { background: var(--parch); border-bottom: 1px solid var(--border); padding: 16px 40px; display: flex; gap: 20px; align-items: flex-end; flex-wrap: wrap; }
+  .ctrl-group { display: flex; flex-direction: column; gap: 4px; }
+  .ctrl-label { font-size: 0.56rem; font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted); }
+  .ctrl-input, .ctrl-select { background: #fff; border: 1px solid var(--border); color: var(--text); padding: 7px 12px; font-family: 'Jost', sans-serif; font-size: 0.75rem; outline: none; min-width: 160px; }
+  .ctrl-select { cursor: pointer; }
+  .search-wrap { flex: 1; min-width: 220px; }
+  .search-wrap input { width: 100%; }
+
+  /* TABS */
+  .tabs { display: flex; gap: 0; padding: 0 40px; background: var(--parch); border-bottom: 1px solid var(--border); }
+  .tab { padding: 11px 22px; font-size: 0.68rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; cursor: pointer; border-bottom: 2px solid transparent; color: var(--muted); transition: all 0.15s; }
+  .tab:hover { color: var(--text); }
+  .tab.active { color: var(--navy); border-bottom-color: var(--gold); }
+
+  /* STATS BAR */
+  .stats-bar { display: grid; grid-template-columns: repeat(5, 1fr); gap: 1px; background: rgba(184,146,74,0.15); border: 1px solid var(--border); margin: 24px 40px 0; }
+  .stat-card { background: var(--parch); padding: 16px 20px; }
+  .stat-label { font-size: 0.55rem; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }
+  .stat-value { font-family: 'Playfair Display', serif; font-size: 1.25rem; font-weight: 500; color: var(--navy); }
+  .stat-value.gold { color: var(--gold); }
+  .stat-value.green { color: var(--green); }
+
+  /* TABLE WRAPPER */
+  .table-wrap { margin: 20px 40px 40px; border: 1px solid var(--border); background: #fff; }
+  .table-head-bar { display: flex; align-items: center; justify-content: space-between; padding: 12px 20px; border-bottom: 1px solid var(--border); background: var(--parch); }
+  .table-head-title { font-size: 0.6rem; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; color: var(--muted); }
+  .export-btn { padding: 5px 14px; background: transparent; border: 1px solid var(--border); font-family: 'Jost', sans-serif; font-size: 0.62rem; font-weight: 500; color: var(--muted); cursor: pointer; letter-spacing: 0.05em; }
+  .export-btn:hover { border-color: var(--gold); color: var(--gold); }
+
+  table { width: 100%; border-collapse: collapse; }
+  thead th {
+    font-size: 0.55rem; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--muted); padding: 9px 14px; text-align: right; border-bottom: 1px solid var(--border);
+    background: var(--parch); white-space: nowrap; position: sticky; top: 0; z-index: 1;
+  }
+  thead th:first-child { text-align: left; }
+  thead th:nth-child(2) { text-align: left; }
+
+  tbody tr { border-bottom: 1px solid rgba(184,146,74,0.08); transition: background 0.1s; }
+  tbody tr:hover { background: rgba(184,146,74,0.04); }
+  tbody td { padding: 10px 14px; font-size: 0.72rem; text-align: right; vertical-align: middle; }
+  tbody td:first-child { text-align: left; }
+  tbody td:nth-child(2) { text-align: left; }
+
+  .fund-name { font-weight: 600; color: var(--navy); font-size: 0.73rem; }
+  .fund-clase { font-size: 0.58rem; color: var(--muted); margin-top: 1px; }
+  .tag { display: inline-block; padding: 2px 8px; font-size: 0.55rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; }
+  .tag-ars { background: rgba(27,94,138,0.1); color: var(--blue); }
+  .tag-usd { background: rgba(45,125,82,0.1); color: var(--green); }
+  .tag-galileo { background: rgba(184,146,74,0.12); color: #8A6A20; }
+  .tag-balanz  { background: rgba(14,26,43,0.08); color: var(--navy); }
+  .tag-inviu   { background: rgba(45,125,82,0.08); color: var(--green); }
+
+  .roa-val { font-family: 'Playfair Display', serif; font-size: 0.88rem; font-weight: 500; }
+  .roa-best { color: var(--green); }
+  .roa-mid  { color: var(--gold); }
+  .roa-low  { color: var(--muted); }
+  .roa-na   { color: #ccc; font-size: 0.65rem; font-style: italic; }
+
+  .best-badge { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--green); margin-left: 4px; vertical-align: middle; }
+
+  .fee-val { color: var(--muted); font-size: 0.68rem; }
+  .min-val { color: var(--muted); font-size: 0.65rem; }
+
+  /* TOOLTIP */
+  .tooltip-cell { position: relative; cursor: help; }
+  .tooltip-cell:hover .tt { display: block; }
+  .tt { display: none; position: absolute; right: 0; top: 100%; z-index: 100; background: var(--navy); color: #fff; font-size: 0.62rem; padding: 8px 12px; white-space: nowrap; border: 1px solid var(--gold); min-width: 200px; line-height: 1.7; }
+  .tt::before { content:''; position:absolute; top:-5px; right:10px; width:8px; height:8px; background: var(--navy); border-top: 1px solid var(--gold); border-left: 1px solid var(--gold); transform: rotate(45deg); }
+
+  /* EMPTY */
+  .empty-row td { text-align: center; color: var(--muted); padding: 32px; font-style: italic; }
+
+  /* LEGEND */
+  .legend { display: flex; gap: 24px; padding: 14px 40px; background: var(--parch); border-top: 1px solid var(--border); flex-wrap: wrap; }
+  .legend-item { display: flex; align-items: center; gap: 7px; font-size: 0.62rem; color: var(--muted); }
+  .legend-dot { width: 8px; height: 8px; border-radius: 50%; }
+
+  /* RESPONSIVE */
+  @media(max-width: 900px) {
+    .header, .controls, .tabs, .stats-bar, .table-wrap, .legend { padding-left: 16px; padding-right: 16px; }
+    .stats-bar { grid-template-columns: repeat(2,1fr); }
+    .controls { flex-direction: column; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <div class="header-title">Calculadora ROA<br><span style="color:var(--gold-light)">Fondos FCI</span></div>
+    <div class="header-sub">Galileo · Balanz · INVIU — Estructura de Fees y Rebates</div>
+  </div>
+  <span class="badge">Uso Interno</span>
+</div>
+<div class="header-gold" style="margin:0 0 0 0; height:1px; background:linear-gradient(90deg,var(--gold),transparent);"></div>
+
+<!-- TABS -->
+<div class="tabs">
+  <div class="tab active" onclick="setMainView('fondos')">Todos los Fondos</div>
+  <div class="tab" onclick="setMainView('galileo')">Galileo</div>
+  <div class="tab" onclick="setMainView('balanz')">Balanz</div>
+  <div class="tab" onclick="setMainView('inviu')">INVIU</div>
+  <div class="tab tab-cliente" onclick="setMainView('cliente')" style="margin-left:auto; color:var(--gold);">👤 ROA por Cliente</div>
+</div>
+
+<!-- CONTROLS -->
+<div class="controls" id="controlsBar">
+  <div class="ctrl-group search-wrap">
+    <label class="ctrl-label">Buscar fondo</label>
+    <input class="ctrl-input" type="text" id="searchInput" placeholder="Nombre o ticker..." oninput="render()">
+  </div>
+  <div class="ctrl-group">
+    <label class="ctrl-label">Moneda</label>
+    <select class="ctrl-select" id="monedaFilter" onchange="render()">
+      <option value="todos">ARS + USD</option>
+      <option value="ARS">Solo ARS</option>
+      <option value="USD">Solo USD</option>
+    </select>
+  </div>
+  <div class="ctrl-group">
+    <label class="ctrl-label">Clase</label>
+    <select class="ctrl-select" id="claseFilter" onchange="render()">
+      <option value="todos">Todas las clases</option>
+      <option value="A">Clase A</option>
+      <option value="B">Clase B</option>
+    </select>
+  </div>
+  <div class="ctrl-group">
+    <label class="ctrl-label">Monto a invertir (USD / ARS)</label>
+    <input class="ctrl-input" type="number" id="montoInput" placeholder="ej: 100000" value="" oninput="render()" style="min-width:180px;">
+  </div>
+</div>
+
+<!-- STATS -->
+<div class="stats-bar" id="statsBar">
+  <div class="stat-card"><div class="stat-label">Total Fondos</div><div class="stat-value" id="st-total">—</div></div>
+  <div class="stat-card"><div class="stat-label">Mayor ROA (vos)</div><div class="stat-value green" id="st-max">—</div></div>
+  <div class="stat-card"><div class="stat-label">ROA Promedio</div><div class="stat-value gold" id="st-avg">—</div></div>
+  <div class="stat-card"><div class="stat-label">Fondos USD</div><div class="stat-value" id="st-usd">—</div></div>
+  <div class="stat-card"><div class="stat-label">Fondos ARS</div><div class="stat-value" id="st-ars">—</div></div>
+</div>
+
+<!-- TABLE -->
+<div class="table-wrap" id="tableWrap">
+  <div class="table-head-bar">
+    <div class="table-head-title" id="tableTitle">Todos los fondos</div>
+    <button class="export-btn" onclick="exportCSV()">↓ Exportar CSV</button>
+  </div>
+  <div style="overflow-x:auto; max-height:600px; overflow-y:auto;">
+    <table>
+      <thead>
+        <tr>
+          <th style="text-align:left">Fondo</th>
+          <th style="text-align:left">ALyC</th>
+          <th>Moneda</th>
+          <th>Clase</th>
+          <th>Fee Adm.</th>
+          <th>Inv. Mínima</th>
+          <th title="ROA que cobrás suscribiendo en Galileo directo">ROA en GALILEO</th>
+          <th title="ROA que cobrás suscribiendo en INVIU">ROA en INVIU</th>
+          <th title="ROA que cobrás suscribiendo en BALANZ">ROA en BALANZ</th>
+          <th title="Mejor opción para maximizar tu ROA">Mejor ALyC</th>
+        </tr>
+      </thead>
+      <tbody id="tableBody"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ============================================================
+     MÓDULO ROA POR CLIENTE
+============================================================ -->
+<div id="viewCliente" style="display:none; padding: 28px 40px 60px;">
+
+  <!-- Header cliente -->
+  <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:24px;">
+    <div>
+      <div style="font-family:'Playfair Display',serif; font-size:1.3rem; color:var(--navy); font-weight:500;">ROA por Cliente</div>
+      <div style="font-size:0.6rem; letter-spacing:0.16em; text-transform:uppercase; color:var(--muted); margin-top:4px;">Cargá la posición y calculá el ROA ponderado de la cuenta</div>
+    </div>
+    <button onclick="resetCliente()" style="padding:7px 18px; background:transparent; border:1px solid var(--border); font-family:'Jost',sans-serif; font-size:0.65rem; color:var(--muted); cursor:pointer; letter-spacing:0.05em;">↺ Limpiar todo</button>
+  </div>
+
+  <!-- Nombre cliente -->
+  <div style="display:flex; gap:16px; align-items:flex-end; margin-bottom:24px; flex-wrap:wrap;">
+    <div class="ctrl-group" style="flex:1; min-width:200px;">
+      <label class="ctrl-label">Nombre del Cliente</label>
+      <input class="ctrl-input" id="clienteNombre" placeholder="ej: Juan Pérez" style="width:100%;">
+    </div>
+    <div class="ctrl-group">
+      <label class="ctrl-label">ALyC donde suscribe</label>
+      <select class="ctrl-select" id="clienteAlyc" onchange="renderClienteTable()">
+        <option value="mejor">Mejor opción por fondo</option>
+        <option value="galileo">Galileo (todos)</option>
+        <option value="inviu">INVIU (todos)</option>
+        <option value="balanz">Balanz (todos)</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Agregar posición -->
+  <div style="background:var(--parch); border:1px solid var(--border); padding:18px 22px; margin-bottom:20px;">
+    <div style="font-size:0.58rem; font-weight:600; letter-spacing:0.18em; text-transform:uppercase; color:var(--muted); margin-bottom:14px;">+ Agregar Posición</div>
+    <div style="display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap;">
+      <!-- Búsqueda fondo -->
+      <div class="ctrl-group" style="flex:2; min-width:220px; position:relative;">
+        <label class="ctrl-label">Buscar Fondo</label>
+        <input class="ctrl-input" id="fondoBuscar" placeholder="Escribí nombre o ticker..." oninput="renderSugerencias()" autocomplete="off" style="width:100%;">
+        <div id="sugerencias" style="display:none; position:absolute; top:100%; left:0; right:0; background:#fff; border:1px solid var(--border); border-top:none; z-index:200; max-height:240px; overflow-y:auto; box-shadow:0 8px 24px rgba(0,0,0,0.1);"></div>
+      </div>
+      <!-- Fondo seleccionado display -->
+      <div class="ctrl-group" style="flex:2; min-width:180px;">
+        <label class="ctrl-label">Fondo Seleccionado</label>
+        <div id="fondoSelDisplay" style="padding:7px 12px; background:#f0ede8; border:1px solid var(--border); font-size:0.72rem; color:var(--muted); min-width:200px; height:34px; display:flex; align-items:center;">Sin seleccionar</div>
+      </div>
+      <!-- Monto -->
+      <div class="ctrl-group" style="min-width:150px;">
+        <label class="ctrl-label">Monto Invertido</label>
+        <input class="ctrl-input" id="posicionMonto" type="number" placeholder="ej: 50000" min="0">
+      </div>
+      <!-- Botón -->
+      <button onclick="agregarPosicion()" style="padding:8px 20px; background:var(--navy); color:#fff; border:none; font-family:'Jost',sans-serif; font-size:0.72rem; font-weight:500; cursor:pointer; letter-spacing:0.05em; height:34px;">+ Agregar</button>
+    </div>
+    <div id="addError" style="display:none; color:var(--red); font-size:0.65rem; margin-top:8px;"></div>
+  </div>
+
+  <!-- Tabla de posiciones -->
+  <div style="border:1px solid var(--border); background:#fff; margin-bottom:20px;">
+    <div style="display:flex; align-items:center; justify-content:space-between; padding:12px 20px; border-bottom:1px solid var(--border); background:var(--parch);">
+      <div style="font-size:0.6rem; font-weight:600; letter-spacing:0.18em; text-transform:uppercase; color:var(--muted);">Posiciones Cargadas</div>
+      <button onclick="exportClienteCSV()" style="padding:5px 14px; background:transparent; border:1px solid var(--border); font-family:'Jost',sans-serif; font-size:0.62rem; font-weight:500; color:var(--muted); cursor:pointer;">↓ Exportar CSV</button>
+    </div>
+    <div style="overflow-x:auto;">
+      <table style="width:100%; border-collapse:collapse;">
+        <thead>
+          <tr>
+            <th style="font-size:0.55rem;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:var(--muted);padding:9px 14px;text-align:left;border-bottom:1px solid var(--border);background:var(--parch);">Fondo</th>
+            <th style="font-size:0.55rem;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:var(--muted);padding:9px 14px;text-align:left;border-bottom:1px solid var(--border);background:var(--parch);">ALyC</th>
+            <th style="font-size:0.55rem;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:var(--muted);padding:9px 14px;text-align:right;border-bottom:1px solid var(--border);background:var(--parch);">Moneda</th>
+            <th style="font-size:0.55rem;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:var(--muted);padding:9px 14px;text-align:right;border-bottom:1px solid var(--border);background:var(--parch);">Clase</th>
+            <th style="font-size:0.55rem;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:var(--muted);padding:9px 14px;text-align:right;border-bottom:1px solid var(--border);background:var(--parch);">Fee Adm.</th>
+            <th style="font-size:0.55rem;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:var(--muted);padding:9px 14px;text-align:right;border-bottom:1px solid var(--border);background:var(--parch);">Monto</th>
+            <th style="font-size:0.55rem;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:var(--muted);padding:9px 14px;text-align:right;border-bottom:1px solid var(--border);background:var(--parch);">ROA Aplicado</th>
+            <th style="font-size:0.55rem;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:var(--muted);padding:9px 14px;text-align:right;border-bottom:1px solid var(--border);background:var(--parch);">Ingreso Anual</th>
+            <th style="font-size:0.55rem;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:var(--muted);padding:9px 14px;text-align:right;border-bottom:1px solid var(--border);background:var(--parch);">Pond. %</th>
+            <th style="border-bottom:1px solid var(--border);background:var(--parch);padding:9px 14px;"></th>
+          </tr>
+        </thead>
+        <tbody id="clienteTableBody">
+          <tr><td colspan="10" style="text-align:center;color:var(--muted);padding:32px;font-style:italic;font-size:0.72rem;">Agregá fondos para calcular el ROA de la cuenta.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- RESUMEN ROA -->
+  <div id="resumenROA" style="display:none;">
+    <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:1px; background:rgba(184,146,74,0.15); border:1px solid var(--border); margin-bottom:20px;">
+      <div style="background:var(--parch); padding:20px 22px;">
+        <div style="font-size:0.55rem;font-weight:600;letter-spacing:0.18em;text-transform:uppercase;color:var(--muted);margin-bottom:8px;">ROA Ponderado</div>
+        <div id="roaTotal" style="font-family:'Playfair Display',serif;font-size:1.8rem;font-weight:500;color:var(--gold);">—</div>
+        <div style="font-size:0.6rem;color:var(--muted);margin-top:4px;">sobre el patrimonio total</div>
+      </div>
+      <div style="background:var(--parch); padding:20px 22px;">
+        <div style="font-size:0.55rem;font-weight:600;letter-spacing:0.18em;text-transform:uppercase;color:var(--muted);margin-bottom:8px;">Ingreso Anual Estimado</div>
+        <div id="ingresoTotal" style="font-family:'Playfair Display',serif;font-size:1.8rem;font-weight:500;color:var(--green);">—</div>
+        <div style="font-size:0.6rem;color:var(--muted);margin-top:4px;">suma de todos los fondos</div>
+      </div>
+      <div style="background:var(--parch); padding:20px 22px;">
+        <div style="font-size:0.55rem;font-weight:600;letter-spacing:0.18em;text-transform:uppercase;color:var(--muted);margin-bottom:8px;">Patrimonio Total</div>
+        <div id="patrimonioTotal" style="font-family:'Playfair Display',serif;font-size:1.8rem;font-weight:500;color:var(--navy);">—</div>
+        <div style="font-size:0.6rem;color:var(--muted);margin-top:4px;">suma de posiciones</div>
+      </div>
+      <div style="background:var(--parch); padding:20px 22px;">
+        <div style="font-size:0.55rem;font-weight:600;letter-spacing:0.18em;text-transform:uppercase;color:var(--muted);margin-bottom:8px;">Posiciones</div>
+        <div id="cantPosiciones" style="font-family:'Playfair Display',serif;font-size:1.8rem;font-weight:500;color:var(--navy);">—</div>
+        <div style="font-size:0.6rem;color:var(--muted);margin-top:4px;">fondos en cartera</div>
+      </div>
+    </div>
+
+    <!-- Barra visual por fondo -->
+    <div style="background:#fff; border:1px solid var(--border); padding:22px 24px;">
+      <div style="font-size:0.58rem;font-weight:600;letter-spacing:0.18em;text-transform:uppercase;color:var(--muted);margin-bottom:16px;">Contribución al ROA por Fondo</div>
+      <div id="roaBars"></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="legend" id="legendBar">
+  <div class="legend-item"><div class="legend-dot" style="background:var(--green)"></div> Mayor ROA disponible</div>
+  <div class="legend-item"><div class="legend-dot" style="background:var(--gold)"></div> ROA intermedio</div>
+  <div class="legend-item"><div class="legend-dot" style="background:var(--muted)"></div> ROA más bajo</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#ccc"></div> No disponible en esa ALyC</div>
+  <div class="legend-item" style="margin-left:auto; font-size:0.6rem; color:var(--muted)">
+    Fórmula: Fee × Rebate_fondo × Acuerdo_ALyC | INVIU: 80% | BALANZ: 72.5%
+  </div>
+</div>
+
+<script>
+// ============================================================
+// ACUERDOS
+// ============================================================
+const ACUERDOS = {
+  galileo_directo_usd: 0.60,  // 60% del fee para USD
+  galileo_directo_ars: 0.50,  // 50% del fee para ARS
+  inviu:   0.80,               // 80% de lo que pague el fondo
+  balanz:  0.725,              // 72.5% de lo que pague el fondo
+};
+
+// ============================================================
+// FONDOS — GALILEO
+// ============================================================
+const GALILEO = [
+  // USD
+  { fondo: "GALILEO EVENT DRIVEN (GED)",      moneda: "USD", clase: "A", fee: 0.0200, inv: "Sin mínimo USD" },
+  { fondo: "GALILEO EVENT DRIVEN (GED)",      moneda: "USD", clase: "B", fee: 0.0125, inv: "> USD 100.000" },
+  { fondo: "GALILEO EVENT DRIVEN (GED)",      moneda: "USD", clase: "C (Ley 27.743)", fee: 0.0200, inv: "Sin mínimo USD" },
+  { fondo: "GALILEO EVENT DRIVEN (GED)",      moneda: "USD", clase: "D (Ley 27.743)", fee: 0.0125, inv: "> USD 100.000" },
+  { fondo: "GALILEO INCOME (GIN)",            moneda: "USD", clase: "A", fee: 0.0100, inv: "Sin mínimo USD" },
+  { fondo: "GALILEO INCOME (GIN)",            moneda: "USD", clase: "B", fee: 0.0075, inv: "> USD 250.000" },
+  { fondo: "GALILEO INCOME (GIN)",            moneda: "USD", clase: "C (Ley 27.743)", fee: 0.0100, inv: "Sin mínimo USD" },
+  { fondo: "GALILEO INCOME (GIN)",            moneda: "USD", clase: "D (Ley 27.743)", fee: 0.0075, inv: "> USD 100.000" },
+  { fondo: "GALILEO FIXED INCOME (GFI)",      moneda: "USD", clase: "A", fee: 0.0200, inv: "Sin mínimo USD" },
+  { fondo: "GALILEO FIXED INCOME (GFI)",      moneda: "USD", clase: "B", fee: 0.0125, inv: "> USD 100.000" },
+  { fondo: "GALILEO MULTISTRATEGY (GAMS)",    moneda: "USD", clase: "A", fee: 0.0200, inv: "Sin mínimo USD" },
+  { fondo: "GALILEO MULTISTRATEGY (GAMS)",    moneda: "USD", clase: "B", fee: 0.0125, inv: "> USD 200.000" },
+  { fondo: "GALILEO MULTISTRATEGY (GAMS)",    moneda: "USD", clase: "C (Ley 27.743)", fee: 0.0200, inv: "Sin mínimo USD" },
+  { fondo: "GALILEO MULTISTRATEGY 2 (GAMSY)", moneda: "USD", clase: "A", fee: 0.0150, inv: "Sin mínimo USD" },
+  { fondo: "GALILEO MULTISTRATEGY 2 (GAMSY)", moneda: "USD", clase: "B", fee: 0.0125, inv: "> USD 200.000" },
+  { fondo: "GALILEO MULTISTRATEGY 2 (GAMSY)", moneda: "USD", clase: "C (Ley 27.743)", fee: 0.0150, inv: "Sin mínimo USD" },
+  { fondo: "GALILEO MULTISTRATEGY 2 (GAMSY)", moneda: "USD", clase: "D (Ley 27.743)", fee: 0.0125, inv: "> USD 100.000" },
+  // ARS
+  { fondo: "GALILEO ARGENTINA (GA)",          moneda: "ARS", clase: "A", fee: 0.0225, inv: "Sin mínimo ARS" },
+  { fondo: "GALILEO ARGENTINA (GA)",          moneda: "ARS", clase: "B", fee: 0.0175, inv: "> $50MM" },
+  { fondo: "GALILEO AHORRO (GAO)",            moneda: "ARS", clase: "A", fee: 0.0250, inv: "Sin mínimo ARS" },
+  { fondo: "GALILEO AHORRO (GAO)",            moneda: "ARS", clase: "B", fee: 0.0200, inv: "> $100MM" },
+  { fondo: "GALILEO PREMIUM (GP)",            moneda: "ARS", clase: "A", fee: 0.0150, inv: "Sin mínimo ARS" },
+  { fondo: "GALILEO PREMIUM (GP)",            moneda: "ARS", clase: "B", fee: 0.0125, inv: "> $15MM" },
+  { fondo: "GALILEO RENTA FIJA (GRF)",        moneda: "ARS", clase: "A", fee: 0.0125, inv: "Sin mínimo ARS" },
+  { fondo: "GALILEO RENTA FIJA (GRF)",        moneda: "ARS", clase: "B", fee: 0.0100, inv: "> $50MM" },
+  { fondo: "GALILEO AHORRO PLUS (GPLUS)",     moneda: "ARS", clase: "A", fee: 0.0250, inv: "Sin mínimo ARS" },
+  { fondo: "GALILEO AHORRO PLUS (GPLUS)",     moneda: "ARS", clase: "B", fee: 0.0200, inv: "> $50MM" },
+  { fondo: "GALILEO ACCIONES (GAC)",          moneda: "ARS", clase: "A", fee: 0.0300, inv: "Sin mínimo ARS" },
+  { fondo: "GALILEO ACCIONES (GAC)",          moneda: "ARS", clase: "B", fee: 0.0150, inv: "> $40MM" },
+  { fondo: "GALILEO ABIERTO PYMES (GAP)",     moneda: "ARS", clase: "B", fee: 0.0200, inv: "$1.000" },
+  { fondo: "GALILEO ESTRATEGIA (GES)",        moneda: "ARS", clase: "A", fee: 0.0250, inv: "Sin mínimo ARS" },
+  { fondo: "GALILEO ESTRATEGIA (GES)",        moneda: "ARS", clase: "B", fee: 0.0200, inv: "> $50MM" },
+  { fondo: "GALILEO PESOS (GAPE)",            moneda: "ARS", clase: "A", fee: 0.0335, inv: "Sin mínimo ARS" },
+  { fondo: "GALILEO PESOS (GAPE)",            moneda: "ARS", clase: "B", fee: 0.0150, inv: "> $1MM" },
+  { fondo: "GALILEO RENTA (GR)",              moneda: "ARS", clase: "A", fee: 0.0150, inv: "Sin mínimo ARS" },
+  { fondo: "GALILEO RENTA (GR)",              moneda: "ARS", clase: "B", fee: 0.0065, inv: "> $50MM" },
+  { fondo: "SF VALUE",                        moneda: "ARS", clase: "A", fee: 0.0200, inv: "Sin mínimo ARS" },
+  { fondo: "GALILEO MULTIMERCADO 2 (GAMM2)",  moneda: "ARS", clase: "A", fee: 0.0250, inv: "Sin mínimo ARS" },
+  { fondo: "GALILEO MULTIMERCADO 2 (GAMM2)",  moneda: "ARS", clase: "B", fee: 0.0200, inv: "> $40MM" },
+  { fondo: "GALILEO SUSTENTABLE (GASG)",      moneda: "ARS", clase: "A", fee: 0.0200, inv: "Sin mínimo ARS" },
+  { fondo: "GALILEO SUSTENTABLE (GASG)",      moneda: "ARS", clase: "B", fee: 0.0150, inv: "> $50MM" },
+  { fondo: "GALILEO MULTIMERCADO 4 (GAMM4)",  moneda: "ARS", clase: "A", fee: 0.0150, inv: "Sin mínimo ARS" },
+  { fondo: "GALILEO BLEND (BLEND)",           moneda: "ARS", clase: "A", fee: 0.0200, inv: "Sin mínimo ARS" },
+  { fondo: "GALILEO BLEND (BLEND)",           moneda: "ARS", clase: "B", fee: 0.0150, inv: "> $60MM" },
+  { fondo: "GALILEO MULTIMERCADO 5 (GAMM5)",  moneda: "ARS", clase: "A", fee: 0.0150, inv: "Sin mínimo ARS" },
+  { fondo: "GALILEO MULTIMERCADO 5 (GAMM5)",  moneda: "ARS", clase: "B", fee: 0.0060, inv: "> $100MM" },
+  { fondo: "GALILEO MULTIMERCADO 6 (GAMM6)",  moneda: "ARS", clase: "A", fee: 0.0250, inv: "Sin mínimo ARS" },
+  { fondo: "GALILEO MULTIMERCADO 6 (GAMM6)",  moneda: "ARS", clase: "B", fee: 0.0175, inv: "> $100MM" },
+  { fondo: "GALILEO MULTIMERCADO 7 (GAMM7)",  moneda: "ARS", clase: "A", fee: 0.0200, inv: "Sin mínimo ARS" },
+  { fondo: "GALILEO MULTIMERCADO 7 (GAMM7)",  moneda: "ARS", clase: "B", fee: 0.0180, inv: "> $200MM" },
+  { fondo: "GALILEO MULTIMERCADO 8 (GAMM8)",  moneda: "ARS", clase: "A", fee: 0.0200, inv: "Sin mínimo ARS" },
+  { fondo: "GALILEO MULTIMERCADO 8 (GAMM8)",  moneda: "ARS", clase: "B", fee: 0.0180, inv: "> $200MM" },
+];
+
+// ============================================================
+// FONDOS — BALANZ (propios, fondos ACDI = fondo de 3ros)
+// Rebate de Balanz a distribuidor: 72.5% sobre el fee
+// Para fondos PROPIOS de Balanz suscriptos en Balanz: 72.5% directo
+// Para fondos Balanz suscriptos en INVIU: 72.5% del 80% ← ACDI
+// ============================================================
+const BALANZ = [
+  // ARS
+  { fondo: "BALANZ Money Market",         moneda: "ARS", clase: "A", fee: 0.0235, inv: "Sin mínimo" },
+  { fondo: "BALANZ Money Market",         moneda: "ARS", clase: "B", fee: 0.0185, inv: "Monto mayor" },
+  { fondo: "BALANZ Money Market",         moneda: "ARS", clase: "C", fee: 0.0155, inv: "Monto mayor" },
+  { fondo: "BALANZ Money Market",         moneda: "ARS", clase: "D", fee: 0.0145, inv: "Monto mayor" },
+  { fondo: "BALANZ Lecaps",               moneda: "ARS", clase: "A", fee: 0.0245, inv: "Sin mínimo" },
+  { fondo: "BALANZ Lecaps",               moneda: "ARS", clase: "B", fee: 0.0200, inv: "Monto mayor" },
+  { fondo: "BALANZ Lecaps",               moneda: "ARS", clase: "C", fee: 0.0165, inv: "Monto mayor" },
+  { fondo: "BALANZ Lecaps",               moneda: "ARS", clase: "D", fee: 0.0160, inv: "Monto mayor" },
+  { fondo: "BALANZ Ahorro CP",            moneda: "ARS", clase: "A", fee: 0.0255, inv: "Sin mínimo" },
+  { fondo: "BALANZ Ahorro CP",            moneda: "ARS", clase: "B", fee: 0.0215, inv: "Monto mayor" },
+  { fondo: "BALANZ Ahorro CP",            moneda: "ARS", clase: "C", fee: 0.0170, inv: "Monto mayor" },
+  { fondo: "BALANZ Ahorro CP",            moneda: "ARS", clase: "D", fee: 0.0165, inv: "Monto mayor" },
+  { fondo: "BALANZ Dólar Linked",         moneda: "ARS", clase: "A", fee: 0.0278, inv: "Sin mínimo" },
+  { fondo: "BALANZ Dólar Linked",         moneda: "ARS", clase: "B", fee: 0.0225, inv: "Monto mayor" },
+  { fondo: "BALANZ Dólar Linked",         moneda: "ARS", clase: "C", fee: 0.0200, inv: "Monto mayor" },
+  { fondo: "BALANZ Dólar Linked",         moneda: "ARS", clase: "D", fee: 0.0190, inv: "Monto mayor" },
+  { fondo: "BALANZ Inflation Linked",     moneda: "ARS", clase: "A", fee: 0.0260, inv: "Sin mínimo" },
+  { fondo: "BALANZ Inflation Linked",     moneda: "ARS", clase: "B", fee: 0.0220, inv: "Monto mayor" },
+  { fondo: "BALANZ Inflation Linked",     moneda: "ARS", clase: "C", fee: 0.0180, inv: "Monto mayor" },
+  { fondo: "BALANZ Inflation Linked",     moneda: "ARS", clase: "D", fee: 0.0175, inv: "Monto mayor" },
+  { fondo: "BALANZ ONs",                  moneda: "ARS", clase: "A", fee: 0.0225, inv: "Sin mínimo" },
+  { fondo: "BALANZ ONs",                  moneda: "ARS", clase: "B", fee: 0.0215, inv: "Monto mayor" },
+  { fondo: "BALANZ ONs",                  moneda: "ARS", clase: "C", fee: 0.0205, inv: "Monto mayor" },
+  { fondo: "BALANZ ONs",                  moneda: "ARS", clase: "D", fee: 0.0200, inv: "Monto mayor" },
+  { fondo: "BALANZ Crédito Privado CP",   moneda: "ARS", clase: "A", fee: 0.0200, inv: "Sin mínimo" },
+  { fondo: "BALANZ Crédito Privado CP",   moneda: "ARS", clase: "B", fee: 0.0180, inv: "Monto mayor" },
+  { fondo: "BALANZ Crédito Privado CP",   moneda: "ARS", clase: "C", fee: 0.0160, inv: "Monto mayor" },
+  { fondo: "BALANZ Crédito Privado CP",   moneda: "ARS", clase: "D", fee: 0.0080, inv: "Monto mayor" },
+  { fondo: "BALANZ Opportunity",          moneda: "ARS", clase: "A", fee: 0.0260, inv: "Sin mínimo" },
+  { fondo: "BALANZ Opportunity",          moneda: "ARS", clase: "B", fee: 0.0260, inv: "Monto mayor" },
+  { fondo: "BALANZ Opportunity",          moneda: "ARS", clase: "C", fee: 0.0210, inv: "Monto mayor" },
+  { fondo: "BALANZ Opportunity",          moneda: "ARS", clase: "D", fee: 0.0210, inv: "Monto mayor" },
+  { fondo: "BALANZ Infraestructura",      moneda: "ARS", clase: "A", fee: 0.0230, inv: "Sin mínimo" },
+  { fondo: "BALANZ Infraestructura",      moneda: "ARS", clase: "B", fee: 0.0165, inv: "Monto mayor" },
+  { fondo: "BALANZ Infraestructura",      moneda: "ARS", clase: "C", fee: 0.0140, inv: "Monto mayor" },
+  { fondo: "BALANZ Infraestructura",      moneda: "ARS", clase: "D", fee: 0.0100, inv: "Monto mayor" },
+  { fondo: "BALANZ Crecimiento",          moneda: "ARS", clase: "A", fee: 0.0260, inv: "Sin mínimo" },
+  { fondo: "BALANZ Crecimiento",          moneda: "ARS", clase: "B", fee: 0.0210, inv: "Monto mayor" },
+  { fondo: "BALANZ Crecimiento",          moneda: "ARS", clase: "C", fee: 0.0200, inv: "Monto mayor" },
+  { fondo: "BALANZ PyME",                 moneda: "ARS", clase: "A", fee: 0.0250, inv: "Sin mínimo" },
+  { fondo: "BALANZ PyME",                 moneda: "ARS", clase: "B", fee: 0.0210, inv: "Monto mayor" },
+  { fondo: "BALANZ Long Pesos",           moneda: "ARS", clase: "A", fee: 0.0190, inv: "Sin mínimo" },
+  { fondo: "BALANZ Long Pesos",           moneda: "ARS", clase: "B", fee: 0.0175, inv: "Monto mayor" },
+  { fondo: "BALANZ Long Pesos",           moneda: "ARS", clase: "C", fee: 0.0150, inv: "Monto mayor" },
+  { fondo: "BALANZ Long Pesos",           moneda: "ARS", clase: "D", fee: 0.0090, inv: "Monto mayor" },
+  { fondo: "BALANZ Renta Mixta",          moneda: "ARS", clase: "A", fee: 0.0277, inv: "Sin mínimo" },
+  { fondo: "BALANZ Renta Mixta",          moneda: "ARS", clase: "B", fee: 0.0253, inv: "Monto mayor" },
+  { fondo: "BALANZ Renta Mixta",          moneda: "ARS", clase: "C", fee: 0.0228, inv: "Monto mayor" },
+  { fondo: "BALANZ Renta Mixta",          moneda: "ARS", clase: "D", fee: 0.0228, inv: "Monto mayor" },
+  { fondo: "BALANZ Acciones",             moneda: "ARS", clase: "A", fee: 0.0250, inv: "Sin mínimo" },
+  { fondo: "BALANZ Acciones",             moneda: "ARS", clase: "B", fee: 0.0190, inv: "Monto mayor" },
+  { fondo: "BALANZ Acciones",             moneda: "ARS", clase: "C", fee: 0.0185, inv: "Monto mayor" },
+  { fondo: "BALANZ Acciones",             moneda: "ARS", clase: "D", fee: 0.0185, inv: "Monto mayor" },
+  { fondo: "BALANZ Equity Selection",     moneda: "ARS", clase: "A", fee: 0.0276, inv: "Sin mínimo" },
+  { fondo: "BALANZ Equity Selection",     moneda: "ARS", clase: "B", fee: 0.0236, inv: "Monto mayor" },
+  { fondo: "BALANZ Equity Selection",     moneda: "ARS", clase: "C", fee: 0.0226, inv: "Monto mayor" },
+  { fondo: "BALANZ Equity Selection",     moneda: "ARS", clase: "D", fee: 0.0200, inv: "Monto mayor" },
+  // USD
+  { fondo: "BALANZ Money Market USD",     moneda: "USD", clase: "A", fee: 0.0025, inv: "Sin mínimo" },
+  { fondo: "BALANZ Money Market USD",     moneda: "USD", clase: "B", fee: 0.0020, inv: "Monto mayor" },
+  { fondo: "BALANZ Money Market USD",     moneda: "USD", clase: "C", fee: 0.0020, inv: "Monto mayor" },
+  { fondo: "BALANZ Latam",               moneda: "USD", clase: "A", fee: 0.0130, inv: "Sin mínimo" },
+  { fondo: "BALANZ Latam",               moneda: "USD", clase: "B", fee: 0.0100, inv: "Monto mayor" },
+  { fondo: "BALANZ Latam",               moneda: "USD", clase: "C", fee: 0.0090, inv: "Monto mayor" },
+  { fondo: "BALANZ Dólar CP",            moneda: "USD", clase: "A", fee: 0.0050, inv: "Sin mínimo" },
+  { fondo: "BALANZ Dólar CP",            moneda: "USD", clase: "B", fee: 0.0050, inv: "Monto mayor" },
+  { fondo: "BALANZ Dólar CP",            moneda: "USD", clase: "C", fee: 0.0050, inv: "Monto mayor" },
+  { fondo: "BALANZ Dólar CP",            moneda: "USD", clase: "D", fee: 0.0050, inv: "Monto mayor" },
+  { fondo: "BALANZ Corporativo",         moneda: "USD", clase: "A", fee: 0.0120, inv: "Sin mínimo" },
+  { fondo: "BALANZ Corporativo",         moneda: "USD", clase: "B", fee: 0.0085, inv: "Monto mayor" },
+  { fondo: "BALANZ Corporativo",         moneda: "USD", clase: "C", fee: 0.0075, inv: "Monto mayor" },
+  { fondo: "BALANZ Soberano",            moneda: "USD", clase: "A", fee: 0.0120, inv: "Sin mínimo" },
+  { fondo: "BALANZ Soberano",            moneda: "USD", clase: "B", fee: 0.0083, inv: "Monto mayor" },
+  { fondo: "BALANZ Soberano",            moneda: "USD", clase: "C", fee: 0.0083, inv: "Monto mayor" },
+  { fondo: "BALANZ Soberano",            moneda: "USD", clase: "D", fee: 0.0073, inv: "Monto mayor" },
+  { fondo: "BALANZ Latam (SIN ARG)",     moneda: "USD", clase: "A", fee: 0.0100, inv: "Sin mínimo" },
+  { fondo: "BALANZ Latam (SIN ARG)",     moneda: "USD", clase: "B", fee: 0.0075, inv: "Monto mayor" },
+  { fondo: "BALANZ Latam (SIN ARG)",     moneda: "USD", clase: "C", fee: 0.0060, inv: "Monto mayor" },
+  { fondo: "BALANZ Latam (SIN ARG)",     moneda: "USD", clase: "D", fee: 0.0060, inv: "Monto mayor" },
+];
+
+// ============================================================
+// FONDOS — INVIU (solo FIMA propio)
+// ============================================================
+const INVIU = [
+  { fondo: "FIMA",  moneda: "ARS", clase: "A", fee: 0.015, inv: "Sin mínimo" },
+];
+
+// ============================================================
+// ROA LOGIC
+// ============================================================
+// Para fondo propio suscripto en su ALyC: fee × rebate_propio
+// Para fondo ACDI en otra ALyC: fee × rebate_propio × acuerdo_alyc
+
+function calcROA(f, alyc) {
+  const isGalileo = GALILEO.includes(f);
+  const isBalanz  = BALANZ.includes(f);
+  const isInviu   = INVIU.includes(f);
+  const rebate = f.moneda === "USD" ? ACUERDOS.galileo_directo_usd : ACUERDOS.galileo_directo_ars;
+
+  if (alyc === "galileo") {
+    if (isGalileo) return f.fee * rebate;   // fondo propio Galileo directo
+    return null;                             // Galileo no distribuye fondos de otras familias
+  }
+  if (alyc === "inviu") {
+    if (isInviu)   return f.fee * ACUERDOS.inviu;                    // FIMA propio en INVIU
+    if (isGalileo) return f.fee * rebate * ACUERDOS.inviu;           // Galileo ACDI en INVIU: fee × 60/50% × 80%
+    if (isBalanz)  return f.fee * ACUERDOS.balanz * ACUERDOS.inviu;  // Balanz ACDI en INVIU: fee × 72.5% × 80%
+    return null;
+  }
+  if (alyc === "balanz") {
+    if (isBalanz)  return f.fee * ACUERDOS.balanz;                   // fondo propio Balanz directo: fee × 72.5%
+    if (isGalileo) return f.fee * rebate * ACUERDOS.balanz;          // Galileo ACDI en Balanz: fee × 60/50% × 72.5%
+    if (isInviu)   return null;                                       // FIMA no disponible en Balanz
+    return null;
+  }
+  return null;
+}
+
+// ============================================================
+// STATE
+// ============================================================
+let currentTab = "todos";
+let mainView = "fondos";
+
+const ALL_FUNDS = [
+  ...GALILEO.map(f => ({...f, alyc:"galileo"})),
+  ...BALANZ.map(f  => ({...f, alyc:"balanz"})),
+  ...INVIU.map(f   => ({...f, alyc:"inviu"})),
+];
+
+// Client module
+let posiciones = [];
+let fondoSeleccionado = null;
+
+function setMainView(view) {
+  mainView = view;
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  event.target.classList.add('active');
+  const isCliente = view === 'cliente';
+  const displayMap = {controlsBar:'flex', statsBar:'grid', tableWrap:'block', legendBar:'flex'};
+  ['controlsBar','statsBar','tableWrap','legendBar'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = isCliente ? 'none' : displayMap[id];
+  });
+  const vc = document.getElementById('viewCliente');
+  if (vc) vc.style.display = isCliente ? 'block' : 'none';
+  if (!isCliente) { currentTab = view === 'fondos' ? 'todos' : view; render(); }
+}
+
+function setTab(tab) {
+  currentTab = tab;
+  render();
+}
+
+// ============================================================
+// CLIENTE MODULE
+// ============================================================
+function renderSugerencias() {
+  const q = document.getElementById('fondoBuscar').value.toLowerCase().trim();
+  const box = document.getElementById('sugerencias');
+  if (!q || q.length < 2) { box.style.display = 'none'; return; }
+  const matches = ALL_FUNDS.filter(f => f.fondo.toLowerCase().includes(q)).slice(0, 12);
+  if (!matches.length) { box.style.display = 'none'; return; }
+  box.innerHTML = matches.map((f, i) => {
+    const alycLabel = {galileo:'Galileo', balanz:'Balanz', inviu:'INVIU'}[f.alyc];
+    const clr = {galileo:'#8A6A20', balanz:'var(--navy)', inviu:'var(--green)'}[f.alyc];
+    return `<div onclick="seleccionarFondo(${i},'${encodeURIComponent(JSON.stringify(f))}')"
+      style="padding:10px 14px; cursor:pointer; border-bottom:1px solid var(--border); font-size:0.72rem; display:flex; justify-content:space-between; align-items:center;"
+      onmouseover="this.style.background='rgba(184,146,74,0.06)'" onmouseout="this.style.background=''">
+      <div>
+        <div style="font-weight:600;color:var(--navy)">${f.fondo}</div>
+        <div style="font-size:0.6rem;color:var(--muted)">Clase ${f.clase} · ${f.moneda} · Fee ${(f.fee*100).toFixed(2)}%</div>
+      </div>
+      <span style="font-size:0.58rem;font-weight:600;color:${clr};padding:2px 8px;border:1px solid currentColor;opacity:0.7">${alycLabel}</span>
+    </div>`;
+  }).join('');
+  box.style.display = 'block';
+}
+
+function seleccionarFondo(idx, encoded) {
+  fondoSeleccionado = JSON.parse(decodeURIComponent(encoded));
+  document.getElementById('fondoBuscar').value = fondoSeleccionado.fondo;
+  document.getElementById('sugerencias').style.display = 'none';
+  const alycLabel = {galileo:'Galileo', balanz:'Balanz', inviu:'INVIU'}[fondoSeleccionado.alyc];
+  document.getElementById('fondoSelDisplay').innerHTML =
+    `<span style="color:var(--navy);font-weight:600">${fondoSeleccionado.fondo}</span>
+     <span style="margin-left:8px;font-size:0.6rem;color:var(--muted)">Clase ${fondoSeleccionado.clase} · ${fondoSeleccionado.moneda} · ${alycLabel}</span>`;
+  document.getElementById('posicionMonto').focus();
+}
+
+// Close suggestions on outside click
+document.addEventListener('click', e => {
+  if (!e.target.closest('#fondoBuscar') && !e.target.closest('#sugerencias')) {
+    const s = document.getElementById('sugerencias');
+    if (s) s.style.display = 'none';
+  }
+});
+
+function agregarPosicion() {
+  const err = document.getElementById('addError');
+  err.style.display = 'none';
+  if (!fondoSeleccionado) { err.textContent = 'Seleccioná un fondo de la lista.'; err.style.display='block'; return; }
+  const monto = parseFloat(document.getElementById('posicionMonto').value);
+  if (!monto || monto <= 0) { err.textContent = 'Ingresá un monto válido mayor a 0.'; err.style.display='block'; return; }
+
+  const alycPref = document.getElementById('clienteAlyc').value;
+  let alycUsada, roa;
+  if (alycPref === 'mejor') {
+    const opts = ['galileo','inviu','balanz'].map(a => ({ a, v: calcROA(fondoSeleccionado, a) })).filter(o => o.v != null);
+    if (!opts.length) { err.textContent = 'Este fondo no tiene ROA calculable en ninguna ALyC.'; err.style.display='block'; return; }
+    const best = opts.reduce((a,b) => b.v > a.v ? b : a);
+    alycUsada = best.a; roa = best.v;
+  } else {
+    roa = calcROA(fondoSeleccionado, alycPref);
+    if (roa == null) { err.textContent = `Este fondo no está disponible en ${alycPref.toUpperCase()}.`; err.style.display='block'; return; }
+    alycUsada = alycPref;
+  }
+
+  posiciones.push({ fund: {...fondoSeleccionado}, monto, roa, alyc: alycUsada });
+
+  // Reset
+  fondoSeleccionado = null;
+  document.getElementById('fondoBuscar').value = '';
+  document.getElementById('fondoSelDisplay').innerHTML = 'Sin seleccionar';
+  document.getElementById('posicionMonto').value = '';
+
+  renderClienteTable();
+}
+
+function eliminarPosicion(idx) {
+  posiciones.splice(idx, 1);
+  renderClienteTable();
+}
+
+function renderClienteTable() {
+  const tbody = document.getElementById('clienteTableBody');
+  const resumen = document.getElementById('resumenROA');
+
+  if (!posiciones.length) {
+    tbody.innerHTML = `<tr><td colspan="10" style="text-align:center;color:var(--muted);padding:32px;font-style:italic;font-size:0.72rem;">Agregá fondos para calcular el ROA de la cuenta.</td></tr>`;
+    resumen.style.display = 'none';
+    return;
+  }
+
+  const totalMonto = posiciones.reduce((s,p) => s + p.monto, 0);
+  const totalIngreso = posiciones.reduce((s,p) => s + p.monto * p.roa, 0);
+  const roaPonderado = totalMonto ? totalIngreso / totalMonto : 0;
+  const maxROA = Math.max(...posiciones.map(p=>p.roa));
+
+  const alycLabel = a => ({galileo:'Galileo', balanz:'Balanz', inviu:'INVIU'}[a]||a);
+  const alycClr   = a => ({galileo:'#8A6A20', balanz:'var(--navy)', inviu:'var(--green)'}[a]||'var(--muted)');
+
+  tbody.innerHTML = posiciones.map((p, i) => {
+    const pond = totalMonto ? p.monto/totalMonto*100 : 0;
+    const ingreso = p.monto * p.roa;
+    const roaClr = p.roa >= 0.01 ? 'var(--green)' : p.roa >= 0.005 ? 'var(--gold)' : 'var(--muted)';
+    return `<tr style="border-bottom:1px solid rgba(184,146,74,0.08)">
+      <td style="padding:10px 14px">
+        <div style="font-weight:600;font-size:0.73rem;color:var(--navy)">${p.fund.fondo}</div>
+        <div style="font-size:0.6rem;color:var(--muted)">Clase ${p.fund.clase}</div>
+      </td>
+      <td style="padding:10px 14px"><span style="font-size:0.62rem;font-weight:600;color:${alycClr(p.alyc)};padding:2px 8px;border:1px solid currentColor;opacity:0.8">${alycLabel(p.alyc)}</span></td>
+      <td style="padding:10px 14px;text-align:right;font-size:0.7rem">${p.fund.moneda}</td>
+      <td style="padding:10px 14px;text-align:right;font-size:0.7rem;color:var(--muted)">${p.fund.clase}</td>
+      <td style="padding:10px 14px;text-align:right;font-size:0.7rem;color:var(--muted)">${(p.fund.fee*100).toFixed(4)}%</td>
+      <td style="padding:10px 14px;text-align:right;font-family:'Playfair Display',serif;font-size:0.95rem;color:var(--navy)">${p.fund.moneda} ${p.monto.toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2})}</td>
+      <td style="padding:10px 14px;text-align:right;font-family:'Playfair Display',serif;font-size:0.95rem;color:${roaClr};font-weight:500">${(p.roa*100).toFixed(4)}%</td>
+      <td style="padding:10px 14px;text-align:right;font-size:0.72rem;color:var(--green);font-weight:500">${p.fund.moneda} ${ingreso.toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2})}</td>
+      <td style="padding:10px 14px;text-align:right;font-size:0.72rem;color:var(--muted)">${pond.toFixed(1)}%</td>
+      <td style="padding:10px 14px;text-align:right"><button onclick="eliminarPosicion(${i})" style="background:none;border:none;cursor:pointer;color:var(--muted);font-size:0.75rem;padding:2px 6px" title="Eliminar">✕</button></td>
+    </tr>`;
+  }).join('') + `<tr style="border-top:2px solid rgba(184,146,74,0.25);background:rgba(184,146,74,0.04)">
+    <td colspan="5" style="padding:12px 14px;font-weight:600;font-size:0.72rem;color:var(--navy)">TOTAL CUENTA — ${document.getElementById('clienteNombre').value||'Cliente'}</td>
+    <td style="padding:12px 14px;text-align:right;font-family:'Playfair Display',serif;font-size:1rem;font-weight:500;color:var(--navy)">${totalMonto.toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2})}</td>
+    <td style="padding:12px 14px;text-align:right;font-family:'Playfair Display',serif;font-size:1rem;font-weight:700;color:var(--gold)">${(roaPonderado*100).toFixed(4)}%</td>
+    <td style="padding:12px 14px;text-align:right;font-family:'Playfair Display',serif;font-size:1rem;font-weight:500;color:var(--green)">${totalIngreso.toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2})}</td>
+    <td colspan="2" style="padding:12px 14px;text-align:right;font-size:0.65rem;color:var(--muted)">100%</td>
+  </tr>`;
+
+  // Update summary cards
+  resumen.style.display = 'block';
+  document.getElementById('roaTotal').textContent        = (roaPonderado*100).toFixed(4) + '%';
+  document.getElementById('ingresoTotal').textContent    = totalIngreso.toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2});
+  document.getElementById('patrimonioTotal').textContent = totalMonto.toLocaleString('es-AR',{minimumFractionDigits:0,maximumFractionDigits:0});
+  document.getElementById('cantPosiciones').textContent  = posiciones.length;
+
+  // Contribution bars
+  const barsEl = document.getElementById('roaBars');
+  const sortedPos = [...posiciones].sort((a,b) => (b.monto*b.roa)-(a.monto*a.roa));
+  const maxContrib = Math.max(...sortedPos.map(p=>p.monto*p.roa));
+  barsEl.innerHTML = sortedPos.map(p => {
+    const contrib = p.monto * p.roa;
+    const pctBar = maxContrib ? contrib/maxContrib*100 : 0;
+    const pond = totalMonto ? p.monto/totalMonto*100 : 0;
+    return `<div style="display:flex;align-items:center;gap:14px;margin-bottom:12px">
+      <div style="width:180px;font-size:0.68rem;font-weight:600;color:var(--navy);white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${p.fund.fondo}">${p.fund.fondo}</div>
+      <div style="flex:1;height:6px;background:#E4DDD0;position:relative">
+        <div style="height:100%;width:${pctBar}%;background:var(--gold);transition:width 0.3s"></div>
+      </div>
+      <div style="width:80px;text-align:right;font-size:0.68rem;color:var(--green);font-weight:500">${p.fund.moneda} ${contrib.toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2})}/año</div>
+      <div style="width:50px;text-align:right;font-size:0.62rem;color:var(--muted)">${pond.toFixed(1)}% pond.</div>
+    </div>`;
+  }).join('');
+}
+
+function resetCliente() {
+  posiciones = [];
+  fondoSeleccionado = null;
+  document.getElementById('clienteNombre').value = '';
+  document.getElementById('fondoBuscar').value = '';
+  document.getElementById('fondoSelDisplay').innerHTML = 'Sin seleccionar';
+  document.getElementById('posicionMonto').value = '';
+  renderClienteTable();
+}
+
+function exportClienteCSV() {
+  if (!posiciones.length) return;
+  const nombre = document.getElementById('clienteNombre').value || 'cliente';
+  const totalMonto = posiciones.reduce((s,p)=>s+p.monto,0);
+  const totalIngreso = posiciones.reduce((s,p)=>s+p.monto*p.roa,0);
+  const roa = totalMonto ? totalIngreso/totalMonto : 0;
+  const header = 'Fondo,ALyC,Moneda,Clase,Fee Adm.,Monto,ROA Aplicado,Ingreso Anual,Ponderación\n';
+  const rows = posiciones.map(p => {
+    const pond = totalMonto ? p.monto/totalMonto*100 : 0;
+    return [
+      `"${p.fund.fondo}"`, p.alyc, p.fund.moneda, p.fund.clase,
+      (p.fund.fee*100).toFixed(4)+'%',
+      p.monto.toFixed(2),
+      (p.roa*100).toFixed(4)+'%',
+      (p.monto*p.roa).toFixed(2),
+      pond.toFixed(2)+'%'
+    ].join(',');
+  }).join('\n');
+  const footer = `\nTOTAL,,,,, ${totalMonto.toFixed(2)}, ${(roa*100).toFixed(4)}%, ${totalIngreso.toFixed(2)}, 100%`;
+  const blob = new Blob([header+rows+footer], {type:'text/csv;charset=utf-8;'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href=url; a.download=`ROA_${nombre}.csv`; a.click();
+}
+
+function pct(val) {
+  if (val == null) return null;
+  return (val * 100).toFixed(4) + "%";
+}
+function pctDisp(val) {
+  if (val == null) return '<span class="roa-na">—</span>';
+  const p = (val * 100);
+  const cls = p >= 1.0 ? "roa-best" : p >= 0.5 ? "roa-mid" : "roa-low";
+  return `<span class="roa-val ${cls}">${p.toFixed(4)}%</span>`;
+}
+
+function render() {
+  const search  = document.getElementById("searchInput").value.toLowerCase();
+  const moneda  = document.getElementById("monedaFilter").value;
+  const clase   = document.getElementById("claseFilter").value;
+  const monto   = parseFloat(document.getElementById("montoInput").value) || null;
+
+  let funds = [...ALL_FUNDS];
+  if (currentTab !== "todos") funds = funds.filter(f => f.alyc === currentTab);
+  if (moneda !== "todos")     funds = funds.filter(f => f.moneda === moneda);
+  if (clase  !== "todos")     funds = funds.filter(f => f.clase.startsWith(clase));
+  if (search)                 funds = funds.filter(f => f.fondo.toLowerCase().includes(search));
+
+  // Update stats
+  const roaVals = funds.map(f => {
+    const vals = [calcROA(f,"galileo"), calcROA(f,"inviu"), calcROA(f,"balanz")].filter(v => v != null);
+    return vals.length ? Math.max(...vals) : null;
+  }).filter(v => v != null);
+
+  document.getElementById("st-total").textContent = funds.length;
+  document.getElementById("st-max").textContent   = roaVals.length ? (Math.max(...roaVals)*100).toFixed(4)+"%" : "—";
+  document.getElementById("st-avg").textContent   = roaVals.length ? ((roaVals.reduce((a,b)=>a+b,0)/roaVals.length)*100).toFixed(4)+"%" : "—";
+  document.getElementById("st-usd").textContent   = funds.filter(f=>f.moneda==="USD").length;
+  document.getElementById("st-ars").textContent   = funds.filter(f=>f.moneda==="ARS").length;
+
+  // Build table
+  const tbody = document.getElementById("tableBody");
+  if (!funds.length) {
+    tbody.innerHTML = `<tr class="empty-row"><td colspan="10">No se encontraron fondos con los filtros aplicados.</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = funds.map(f => {
+    const rGal  = calcROA(f, "galileo");
+    const rInv  = calcROA(f, "inviu");
+    const rBal  = calcROA(f, "balanz");
+
+    const vals  = [rGal, rInv, rBal].filter(v => v != null);
+    const maxV  = vals.length ? Math.max(...vals) : null;
+    const bestAlyc = maxV == null ? "—" :
+      (rGal === maxV && rGal != null) ? "GALILEO" :
+      (rInv === maxV && rInv != null) ? "INVIU" : "BALANZ";
+
+    // Monto calc
+    let montoStr = "";
+    if (monto && maxV) {
+      const ing = monto * maxV;
+      montoStr = `<div style="font-size:0.6rem;color:var(--green);margin-top:2px">≈ ${f.moneda} ${ing.toLocaleString("es-AR",{minimumFractionDigits:2,maximumFractionDigits:2})} / año</div>`;
+    }
+
+    const alycTag = {galileo:"tag-galileo", balanz:"tag-balanz", inviu:"tag-inviu"}[f.alyc];
+    const alycLabel = {galileo:"Galileo", balanz:"Balanz", inviu:"INVIU"}[f.alyc];
+    const monedaTag = f.moneda === "ARS" ? "tag-ars" : "tag-usd";
+
+    // Tooltip for galileo col
+    const ttGal = rGal != null
+      ? `Fee: ${(f.fee*100).toFixed(4)}% × Rebate: ${f.moneda==="USD"?"60%":"50%"} = ${(rGal*100).toFixed(4)}%`
+      : "No disponible";
+    const ttInv = rInv != null
+      ? `Fee: ${(f.fee*100).toFixed(4)}% × Rebate: ${f.moneda==="USD"?"60%":"50%"} × INVIU 80% = ${(rInv*100).toFixed(4)}%`
+      : "No disponible";
+    const ttBal = rBal != null
+      ? (BALANZ.includes(f)
+        ? `Fee: ${(f.fee*100).toFixed(4)}% × Balanz 72.5% = ${(rBal*100).toFixed(4)}%`
+        : `Fee: ${(f.fee*100).toFixed(4)}% × Rebate: ${f.moneda==="USD"?"60%":"50%"} × Balanz 72.5% = ${(rBal*100).toFixed(4)}%`)
+      : "No disponible";
+
+    return `<tr>
+      <td>
+        <div class="fund-name">${f.fondo}</div>
+        <div class="fund-clase">Clase ${f.clase}</div>
+        ${montoStr}
+      </td>
+      <td><span class="tag ${alycTag}">${alycLabel}</span></td>
+      <td><span class="tag ${monedaTag}">${f.moneda}</span></td>
+      <td style="color:var(--muted);font-size:0.7rem">${f.clase}</td>
+      <td class="fee-val">${(f.fee*100).toFixed(4)}%</td>
+      <td class="min-val">${f.inv}</td>
+      <td class="tooltip-cell">${pctDisp(rGal)}${rGal===maxV&&rGal!=null?'<span class="best-badge"></span>':''}<div class="tt">${ttGal}</div></td>
+      <td class="tooltip-cell">${pctDisp(rInv)}${rInv===maxV&&rInv!=null?'<span class="best-badge"></span>':''}<div class="tt">${ttInv}</div></td>
+      <td class="tooltip-cell">${pctDisp(rBal)}${rBal===maxV&&rBal!=null?'<span class="best-badge"></span>':''}<div class="tt">${ttBal}</div></td>
+      <td style="font-weight:600;font-size:0.72rem;color:var(--navy)">${bestAlyc}</td>
+    </tr>`;
+  }).join("");
+}
+
+function exportCSV() {
+  const search  = document.getElementById("searchInput").value.toLowerCase();
+  const moneda  = document.getElementById("monedaFilter").value;
+  const clase   = document.getElementById("claseFilter").value;
+  let funds = [...ALL_FUNDS];
+  if (currentTab !== "todos") funds = funds.filter(f => f.alyc === currentTab);
+  if (moneda !== "todos")     funds = funds.filter(f => f.moneda === moneda);
+  if (clase  !== "todos")     funds = funds.filter(f => f.clase.startsWith(clase));
+  if (search)                 funds = funds.filter(f => f.fondo.toLowerCase().includes(search));
+
+  const header = "Fondo,ALyC,Moneda,Clase,Fee Adm.,Inv Mínima,ROA Galileo,ROA INVIU,ROA Balanz,Mejor ALyC\n";
+  const rows = funds.map(f => {
+    const rGal = calcROA(f,"galileo"), rInv = calcROA(f,"inviu"), rBal = calcROA(f,"balanz");
+    const vals = [rGal,rInv,rBal].filter(v=>v!=null);
+    const maxV = vals.length ? Math.max(...vals) : null;
+    const best = maxV==null?"—":(rGal===maxV?"GALILEO":rInv===maxV?"INVIU":"BALANZ");
+    return [
+      `"${f.fondo}"`, f.alyc, f.moneda, f.clase,
+      (f.fee*100).toFixed(4)+"%",
+      `"${f.inv}"`,
+      rGal!=null?(rGal*100).toFixed(4)+"%":"N/A",
+      rInv!=null?(rInv*100).toFixed(4)+"%":"N/A",
+      rBal!=null?(rBal*100).toFixed(4)+"%":"N/A",
+      best
+    ].join(",");
+  }).join("\n");
+
+  const blob = new Blob([header+rows], {type:"text/csv;charset=utf-8;"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a"); a.href=url; a.download="ROA_fondos.csv"; a.click();
+}
+
+// Init
+render();
+</script>
+</body>
+</html>
