@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SilverCloud | Galileo Fondos</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,700&family=Space+Mono:wght@400;700&display=swap');
+  :root{
+    --bg-primary:#0a0e17;--bg-secondary:#111827;--bg-card:#1a2235;--bg-card-hover:#1f2a40;
+    --bg-input:#0d1220;--border:#2a3550;--text-primary:#e8ecf4;--text-secondary:#8892a8;
+    --text-muted:#5a6580;--accent-blue:#4a9eff;--green:#34d399;--green-bg:rgba(52,211,153,0.1);
+    --red:#f87171;--red-bg:rgba(248,113,113,0.1);--gold:#fbbf24;--purple:#a78bfa;--cyan:#22d3ee;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:'DM Sans',sans-serif;background:var(--bg-primary);color:var(--text-primary);min-height:100vh}
+  body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");pointer-events:none;z-index:0}
+  .topnav{background:var(--bg-secondary);border-bottom:1px solid var(--border);padding:0.5rem 1.5rem;display:flex;align-items:center;gap:0.4rem;flex-wrap:wrap;position:relative;z-index:1}
+  .topnav a{font-family:'Space Mono',monospace;font-size:0.7rem;padding:0.35rem 0.8rem;border-radius:6px;text-decoration:none;color:var(--text-muted);transition:all 0.15s;border:1px solid transparent}
+  .topnav a:hover{color:var(--text-primary);background:var(--bg-card)}
+  .topnav a.active{color:var(--accent-blue);border-color:var(--accent-blue);background:rgba(74,158,255,0.08)}
+  .topnav .home-link{color:var(--text-secondary);font-weight:700;margin-right:0.5rem}
+  .container{max-width:1400px;margin:0 auto;padding:1.5rem;position:relative;z-index:1}
+  .fund-tabs{display:flex;gap:0.5rem;margin-bottom:1.5rem}
+  .fund-tab{font-family:'Space Mono',monospace;font-size:0.8rem;padding:0.6rem 1.5rem;border-radius:10px;border:1px solid var(--border);background:var(--bg-card);color:var(--text-muted);cursor:pointer;transition:all 0.2s}
+  .fund-tab:hover{border-color:var(--accent-blue);color:var(--text-secondary)}
+  .fund-tab.active{background:var(--accent-blue);border-color:var(--accent-blue);color:var(--bg-primary);font-weight:700}
+  .profile-card{background:var(--bg-card);border:1px solid var(--border);border-radius:14px;padding:1.5rem;margin-bottom:1.5rem}
+  .profile-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:1rem;flex-wrap:wrap;gap:1rem}
+  .profile-name{font-size:1.3rem;font-weight:700;color:var(--accent-blue);margin-bottom:0.3rem}
+  .profile-desc{font-size:0.8rem;color:var(--text-secondary);line-height:1.5;max-width:700px}
+  .profile-badge{font-family:'Space Mono',monospace;font-size:0.6rem;padding:0.2rem 0.6rem;border-radius:5px;background:rgba(74,158,255,0.12);color:var(--accent-blue);font-weight:700;text-transform:uppercase;letter-spacing:0.5px;display:inline-block;margin-top:0.4rem;margin-right:0.3rem}
+  .profile-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:0.8rem;margin-top:1rem;padding-top:1rem;border-top:1px solid var(--border)}
+  .profile-item .pi-label{font-size:0.55rem;color:var(--text-muted);font-family:'Space Mono',monospace;text-transform:uppercase;letter-spacing:1px}
+  .profile-item .pi-value{font-family:'Space Mono',monospace;font-size:0.85rem;font-weight:600;color:var(--text-primary)}
+  .perf-section{background:var(--bg-card);border:1px solid var(--border);border-radius:14px;padding:1.5rem;margin-bottom:1.5rem}
+  .perf-section h3{font-size:0.65rem;color:var(--text-muted);font-family:'Space Mono',monospace;text-transform:uppercase;letter-spacing:2px;margin-bottom:1rem}
+  .perf-grid{display:flex;gap:0;flex-wrap:wrap;border:1px solid var(--border);border-radius:10px;overflow:hidden}
+  .perf-cell{flex:1;min-width:100px;padding:0.8rem;text-align:center;border-right:1px solid var(--border);border-bottom:1px solid var(--border)}
+  .perf-cell:last-child{border-right:none}
+  .perf-cell .pc-label{font-size:0.55rem;color:var(--text-muted);font-family:'Space Mono',monospace;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:0.3rem}
+  .perf-cell .pc-value{font-family:'Space Mono',monospace;font-size:1rem;font-weight:700}
+  .nav-bar{display:flex;gap:1.5rem;margin-bottom:1.5rem;padding:1rem 1.2rem;background:var(--bg-secondary);border-radius:10px;border:1px solid var(--border);align-items:center;flex-wrap:wrap}
+  .nav-item{display:flex;align-items:center;gap:0.5rem}
+  .nav-label{font-size:0.6rem;color:var(--text-muted);font-family:'Space Mono',monospace;text-transform:uppercase;letter-spacing:1px}
+  .nav-input{background:var(--bg-input);border:1px solid var(--border);border-radius:6px;color:var(--gold);font-family:'Space Mono',monospace;font-size:0.85rem;font-weight:700;padding:0.35rem 0.5rem;width:120px;text-align:right;outline:none}
+  .nav-input:focus{border-color:var(--accent-blue)}
+  .nav-value{font-family:'Space Mono',monospace;font-size:1.1rem;font-weight:700}
+  .nav-ytd{font-family:'Space Mono',monospace;font-size:1.1rem;font-weight:700;padding:0.3rem 0.8rem;border-radius:8px}
+  .comp-overview{display:grid;grid-template-columns:260px 1fr;gap:1rem;margin-bottom:1.5rem}
+  .pie-card{background:var(--bg-card);border:1px solid var(--border);border-radius:14px;padding:1.2rem;display:flex;flex-direction:column;align-items:center}
+  .pie-card h3{font-size:0.65rem;color:var(--text-muted);font-family:'Space Mono',monospace;text-transform:uppercase;letter-spacing:2px;margin-bottom:0.8rem;align-self:flex-start}
+  .weight-card{background:var(--bg-card);border:1px solid var(--border);border-radius:14px;padding:1.2rem}
+  .weight-card h3{font-size:0.65rem;color:var(--text-muted);font-family:'Space Mono',monospace;text-transform:uppercase;letter-spacing:2px;margin-bottom:0.8rem}
+  .weight-row{display:flex;align-items:center;gap:0.8rem;margin-bottom:0.5rem}
+  .weight-label{width:130px;font-family:'Space Mono',monospace;font-size:0.75rem;color:var(--text-secondary)}
+  .weight-bar-bg{flex:1;height:22px;background:var(--bg-secondary);border-radius:5px;overflow:hidden}
+  .weight-bar-fill{height:100%;border-radius:5px;display:flex;align-items:center;justify-content:flex-end;padding-right:6px;font-family:'Space Mono',monospace;font-size:0.65rem;font-weight:700;color:var(--bg-primary);min-width:30px;transition:width 0.5s}
+  .weight-amount{width:120px;text-align:right;font-family:'Space Mono',monospace;font-size:0.7rem;color:var(--text-muted)}
+  .block{background:var(--bg-card);border:1px solid var(--border);border-radius:14px;margin-bottom:1rem;overflow:hidden}
+  .block-header{display:flex;justify-content:space-between;align-items:center;padding:1rem 1.2rem;border-bottom:1px solid var(--border)}
+  .block-title-area{display:flex;align-items:center;gap:0.8rem}
+  .block-color{width:12px;height:12px;border-radius:3px}
+  .block-title-input{background:transparent;border:none;color:var(--text-primary);font-family:'DM Sans',sans-serif;font-size:1rem;font-weight:700;outline:none;width:200px}
+  .block-title-input:focus{border-bottom:1px solid var(--accent-blue)}
+  .block-weight{font-family:'Space Mono',monospace;font-size:0.85rem;font-weight:700;color:var(--accent-blue)}
+  .block-total{font-family:'Space Mono',monospace;font-size:0.8rem;color:var(--text-muted);margin-left:1rem}
+  .block-actions{display:flex;gap:0.3rem}
+  .btn-sm{font-size:0.7rem;padding:0.3rem 0.6rem;border-radius:6px;cursor:pointer;border:1px solid var(--border);background:var(--bg-card);color:var(--text-muted);font-family:'DM Sans',sans-serif;transition:all 0.15s}
+  .btn-sm:hover{border-color:var(--accent-blue);color:var(--text-primary)}
+  .btn-sm.danger{border-color:transparent}.btn-sm.danger:hover{border-color:var(--red);color:var(--red)}
+  .block table{width:100%;border-collapse:collapse}
+  .block thead th{font-family:'Space Mono',monospace;font-size:0.55rem;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);padding:0.5rem 0.8rem;text-align:right;border-bottom:1px solid var(--border)}
+  .block thead th:first-child{text-align:left}
+  .block tbody tr{border-bottom:1px solid rgba(42,53,80,0.3)}
+  .block tbody tr:hover{background:var(--bg-card-hover)}
+  .block tbody td{padding:0.45rem 0.8rem;text-align:right;font-family:'Space Mono',monospace;font-size:0.75rem;color:var(--text-secondary)}
+  .block tbody td:first-child{text-align:left;font-weight:700;color:var(--accent-blue)}
+  .block .edit-input{background:var(--bg-input);border:1px solid var(--border);border-radius:4px;color:var(--gold);font-family:'Space Mono',monospace;font-size:0.75rem;font-weight:700;padding:0.25rem 0.4rem;width:90px;text-align:right;outline:none}
+  .block .edit-input:focus{border-color:var(--accent-blue)}
+  .block .ticker-input{color:var(--accent-blue);width:70px;text-align:left}
+  .del-btn{background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:0.7rem;padding:0.2rem}
+  .del-btn:hover{color:var(--red)}
+  .add-block-btn{display:flex;align-items:center;justify-content:center;padding:1rem;border:2px dashed var(--border);border-radius:14px;color:var(--text-muted);cursor:pointer;font-family:'Space Mono',monospace;font-size:0.8rem;transition:all 0.2s;margin-bottom:1.5rem}
+  .add-block-btn:hover{border-color:var(--accent-blue);color:var(--accent-blue)}
+  .header-actions{display:flex;gap:0.5rem;flex-wrap:wrap;margin-bottom:1.5rem}
+  .btn{font-family:'DM Sans',sans-serif;font-size:0.8rem;padding:0.45rem 0.9rem;border-radius:8px;cursor:pointer;transition:all 0.2s;display:flex;align-items:center;gap:0.3rem;border:1px solid var(--border);background:var(--bg-card);color:var(--text-secondary)}
+  .btn:hover{background:var(--bg-card-hover);color:var(--text-primary);border-color:var(--accent-blue)}
+  .footer{text-align:center;padding:1rem 0;color:var(--text-muted);font-size:0.65rem;font-family:'Space Mono',monospace}
+  .positive{color:var(--green)!important}.negative{color:var(--red)!important}
+  @media(max-width:768px){.container{padding:0.8rem}.comp-overview{grid-template-columns:1fr}.perf-grid{flex-direction:column}}
+  .bottom-nav{display:none;position:fixed;bottom:0;left:0;right:0;background:#0a0e17;border-top:1px solid #2a3550;z-index:50;padding:0.4rem 0.5rem 0.6rem;justify-content:space-around;align-items:center}
+  .bottom-nav a{display:flex;flex-direction:column;align-items:center;gap:0.15rem;text-decoration:none;color:#5a6580;font-size:0.55rem;font-family:'Space Mono',monospace;padding:0.3rem 0.4rem;border-radius:8px;transition:all 0.15s;min-width:50px}
+  .bottom-nav a:hover,.bottom-nav a.active{color:#4a9eff}
+  .bottom-nav a .bn-icon{font-size:1.2rem;line-height:1}
+  @media(max-width:768px){.bottom-nav{display:flex}body{padding-bottom:70px}}
+  /* ── Daily NAV Tracker ── */
+  .daily-tracker{background:var(--bg-card);border:1px solid var(--border);border-radius:14px;margin-bottom:1.5rem;overflow:hidden}
+  .daily-tracker-header{display:flex;align-items:center;justify-content:space-between;padding:0.8rem 1.2rem;border-bottom:1px solid var(--border);cursor:pointer;user-select:none}
+  .daily-tracker-header:hover{background:var(--bg-card-hover)}
+  .daily-tracker-title{font-family:'Space Mono',monospace;font-size:0.65rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:2px}
+  .daily-tracker-ytd{font-family:'Space Mono',monospace;font-size:1rem;font-weight:700;padding:0.25rem 0.7rem;border-radius:6px}
+  .daily-tracker-toggle{color:var(--text-muted);font-size:0.8rem;transition:transform 0.2s}
+  .daily-tracker-toggle.open{transform:rotate(180deg)}
+  .daily-input-row{display:flex;align-items:center;gap:1rem;padding:0.8rem 1.2rem;border-bottom:1px solid var(--border);flex-wrap:wrap}
+  .daily-input-row label{font-family:'Space Mono',monospace;font-size:0.6rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px}
+  .daily-input-row input{background:var(--bg-input);border:1px solid var(--border);border-radius:6px;color:var(--gold);font-family:'Space Mono',monospace;font-size:0.85rem;font-weight:700;padding:0.35rem 0.6rem;width:140px;text-align:right;outline:none}
+  .daily-input-row input:focus{border-color:var(--accent-blue)}
+  .btn-register{font-family:'Space Mono',monospace;font-size:0.7rem;padding:0.4rem 0.9rem;border-radius:7px;cursor:pointer;background:var(--accent-blue);color:var(--bg-primary);border:none;font-weight:700;transition:all 0.15s}
+  .btn-register:hover{opacity:0.85}
+  .btn-clear-daily{font-family:'Space Mono',monospace;font-size:0.65rem;padding:0.35rem 0.7rem;border-radius:6px;cursor:pointer;background:transparent;color:var(--red);border:1px solid var(--red);transition:all 0.15s;opacity:0.6}
+  .btn-clear-daily:hover{opacity:1}
+  .daily-table-wrap{max-height:400px;overflow-y:auto}
+  .daily-table{width:100%;border-collapse:collapse}
+  .daily-table thead th{font-family:'Space Mono',monospace;font-size:0.55rem;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);padding:0.5rem 1rem;text-align:right;border-bottom:1px solid var(--border);background:var(--bg-secondary);position:sticky;top:0}
+  .daily-table thead th:first-child{text-align:left}
+  .daily-table tbody tr{border-bottom:1px solid rgba(42,53,80,0.4);transition:background 0.1s}
+  .daily-table tbody tr:hover{background:var(--bg-card-hover)}
+  .daily-table tbody td{padding:0.45rem 1rem;font-family:'Space Mono',monospace;font-size:0.78rem;text-align:right;color:var(--text-secondary)}
+  .daily-table tbody td:first-child{text-align:left;color:var(--text-muted);font-size:0.72rem}
+  .daily-table .td-nav{color:var(--text-primary);font-weight:600}
+  .daily-table .td-del{width:32px;text-align:center}
+  .daily-table .del-day-btn{background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:0.65rem;opacity:0.4;transition:all 0.15s;padding:2px 4px}
+  .daily-table .del-day-btn:hover{color:var(--red);opacity:1}
+  .daily-empty{padding:1.5rem;text-align:center;color:var(--text-muted);font-family:'Space Mono',monospace;font-size:0.75rem}
+
+</style>
+</head>
+<body>
+<div class="topnav">
+  <a href="index.html" class="home-link">← SC</a>
+  <a href="crypto.html">Crypto</a>
+  <a href="curva-pesos.html">Curva Tasa Fija</a>
+  <a href="precios-iol.html">Precios IOL</a>
+  <a href="cartera.html">Mi Cartera</a>
+  <a href="galileo.html" class="active">Galileo Fondos</a>
+</div>
+
+<div class="container">
+  <div class="fund-tabs">
+    <button class="fund-tab active" onclick="switchFund('multi',this)">Galileo Multimercado IV</button>
+    <button class="fund-tab" onclick="switchFund('renta',this)">Galileo Renta</button>
+  </div>
+  <div class="profile-card" id="profileCard"></div>
+  <div class="perf-section" id="perfSection"></div>
+  <div class="nav-bar">
+    <div class="nav-item">
+      <span class="nav-label">NAV 31/12/25</span>
+      <input class="nav-input" id="navStart" placeholder="0,00" onchange="saveAndRecalc()">
+    </div>
+    <div class="nav-item">
+      <span class="nav-label">NAV Actual</span>
+      <input class="nav-input" id="navNow" placeholder="0,00" onchange="saveAndRecalc()">
+    </div>
+    <div class="nav-item">
+      <span class="nav-label">AUM (Patrimonio)</span>
+      <span class="nav-value" id="aumDisplay" style="font-family:'Space Mono',monospace;font-size:0.95rem;font-weight:700;color:var(--text-primary)">--</span>
+    </div>
+    <div class="nav-item">
+      <span class="nav-label">YTD</span>
+      <span class="nav-ytd" id="ytdDisplay">--</span>
+    </div>
+  </div>
+
+  <!-- Daily NAV Tracker -->
+  <div class="daily-tracker" id="dailyTracker">
+    <div class="daily-tracker-header" onclick="toggleDailyTracker()">
+      <div style="display:flex;align-items:center;gap:1rem;">
+        <span class="daily-tracker-title">Rendimiento Diario</span>
+        <span class="daily-tracker-ytd" id="dailyYTD">YTD --</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:0.8rem;">
+        <span style="font-family:'Space Mono',monospace;font-size:0.65rem;color:var(--text-muted);" id="dailyCount">0 registros</span>
+        <span class="daily-tracker-toggle" id="dailyToggle">▼</span>
+      </div>
+    </div>
+    <div id="dailyBody" style="display:none;">
+      <div class="daily-input-row">
+        <div style="display:flex;flex-direction:column;gap:3px;">
+          <label>Fecha</label>
+          <input type="date" id="dailyDate" style="width:150px;color:var(--text-primary);">
+        </div>
+        <div style="display:flex;flex-direction:column;gap:3px;">
+          <label>NAV del día</label>
+          <input type="number" id="dailyNAV" placeholder="ej: 10.325,89" step="0.01">
+        </div>
+        <div style="display:flex;flex-direction:column;gap:3px;">
+          <label>Nota (opcional)</label>
+          <input type="text" id="dailyNota" placeholder="ej: suba acciones" style="width:180px;color:var(--text-primary);">
+        </div>
+        <button class="btn-register" onclick="registerDay()">+ Registrar</button>
+        <button class="btn-clear-daily" onclick="clearAllDays()" title="Borrar todos los registros">🗑 Limpiar todo</button>
+      </div>
+      <div class="daily-table-wrap">
+        <table class="daily-table">
+          <thead>
+            <tr>
+              <th>Fecha</th>
+              <th>NAV</th>
+              <th>Var. diaria</th>
+              <th>YTD acum.</th>
+              <th>Nota</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="dailyTableBody"></tbody>
+        </table>
+        <div class="daily-empty" id="dailyEmpty">Sin registros — ingresá el NAV del día para empezar</div>
+      </div>
+    </div>
+  </div>
+
+
+  <div class="comp-overview">
+    <div class="pie-card">
+      <h3>Ponderación</h3>
+      <canvas id="pieChart" width="220" height="220"></canvas>
+    </div>
+    <div class="weight-card">
+      <h3>Distribución por Categoría</h3>
+      <div id="weightBars"></div>
+    </div>
+  </div>
+  <div id="blocksContainer"></div>
+  <div class="add-block-btn" onclick="addBlock()">+ Agregar Categoría</div>
+  <div class="header-actions">
+    <button class="btn" onclick="exportFund()">↓ Exportar JSON</button>
+    <button class="btn" onclick="document.getElementById('importFile').click()">↑ Importar JSON</button>
+    <input type="file" id="importFile" accept=".json" style="display:none" onchange="importFund(event)">
+  </div>
+  <div class="footer">SilverCloud &copy; 2026 — Galileo Fondos — Datos guardados en tu navegador</div>
+</div>
+
+<script>
+const PROFILES = {
+  multi: {
+    name: 'Galileo Multimercado IV-A',
+    desc: 'Fondo abierto de inversión constituido en Argentina. El fondo busca alcanzar los mejores resultados gestionando el riesgo asociado, identificando y conformando un portafolio de inversiones de renta mixta con grados variables de diversificación. El fondo invierte al menos el 75% en instrumentos financieros y valores negociables emitidos en el país exclusivamente en moneda de curso legal.',
+    badges: ['Open-End Fund','Mixed Allocation','Dynamic Allocation','Argentina'],
+    info: {
+      'Inicio': '17/11/2022', 'Clase': 'Institucional', 'Moneda': 'ARS',
+      'Inv. Mínima': 'ARS 1.000', 'Expense Ratio': '5,40%',
+      'Front Load': '2,00%', 'Back Load': '5,00%', 'Mgmt Fee': '5,00%',
+      'Fuente': 'CAFCI'
+    },
+    perf: [
+      {label:'1 Sem',value:0.14},{label:'1 Mes',value:0.46},{label:'3 Meses',value:-4.62},
+      {label:'YTD',value:-4.35},{label:'1 Año',value:27.54},{label:'3 Años',value:111.96},
+      {label:'2025',value:35.60},{label:'2024',value:98.44},{label:'2023',value:309.31}
+    ],
+    metrics: {
+      'Sharpe (1Y)': '-0,09', 'Volatilidad (1Y)': '26,10%', 'Sortino (1Y)': '-0,18', 'Downside Risk': '14,51%'
+    }
+  },
+  renta: {
+    name: 'Galileo Renta-A',
+    desc: 'Fondo abierto de renta fija constituido en Argentina. Objetivo: Aggregate Bond. El fondo invierte en instrumentos de renta fija de alta calidad crediticia emitidos en Argentina, buscando generar retornos consistentes a través de una gestión activa de duración y crédito.',
+    badges: ['Open-End Fund','Fixed Income','Aggregate','Argentina'],
+    info: {
+      'NAV': 'ARS 45.780,16', 'Patrimonio': 'ARS 11,11B', 'Moneda': 'ARS',
+      'Fuente': 'CAFCI', 'Expense Ratio': 'N.A.'
+    },
+    perf: [
+      {label:'1 Sem',value:0.77},{label:'1 Mes',value:2.59},{label:'3 Meses',value:6.15},
+      {label:'YTD',value:6.31},{label:'1 Año',value:44.25},{label:'3 Años',value:89.19},
+      {label:'5 Años',value:85.34},
+      {label:'2025',value:40.14},{label:'2024',value:72.87},{label:'2023',value:205.19},{label:'2022',value:96.01}
+    ],
+    metrics: {
+      'Sharpe (1Y)': '0,79', 'Volatilidad (1Y)': '13,24%', 'Sortino (1Y)': '0,83', 'Downside Risk': '9,04%'
+    }
+  }
+};
+
+const BLOCK_COLORS = ['#4a9eff','#34d399','#a78bfa','#22d3ee','#fbbf24','#fb923c','#f87171','#ec4899'];
+let currentFund = 'multi';
+let fundData = {
+  multi: { navStart:0, navNow:0, aum:'', blocks:[] },
+  renta: { navStart:0, navNow:0, aum:'', blocks:[] }
+};
+
+function saveData() {
+  const fd = fundData[currentFund];
+  fd.navStart = parseNum(document.getElementById('navStart').value);
+  fd.navNow = parseNum(document.getElementById('navNow').value);
+  localStorage.setItem('sc_galileo', JSON.stringify(fundData));
+}
+function loadData() {
+  try { const raw = localStorage.getItem('sc_galileo'); if (raw) fundData = JSON.parse(raw); } catch(e) {}
+}
+function saveAndRecalc() { saveData(); recalc(); renderDailyTable(); }
+function exportFund() {
+  saveData();
+  const blob = new Blob([JSON.stringify(fundData, null, 2)], {type:'application/json'});
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+  a.download = 'galileo-fondos-' + new Date().toISOString().slice(0,10) + '.json'; a.click();
+}
+function importFund(e) {
+  const f = e.target.files[0]; if (!f) return;
+  const r = new FileReader();
+  r.onload = function(ev) { try { fundData = JSON.parse(ev.target.result); saveData(); renderAll(); } catch(err) { alert('Error: ' + err.message); } };
+  r.readAsText(f); e.target.value = '';
+}
+function parseNum(s) { if (!s) return 0; return parseFloat(String(s).replace(/\./g,'').replace(',','.')) || 0; }
+function fmtNum(n) { if (n == null || isNaN(n)) return '--'; return n.toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+function fmtPct(n) { if (n == null || isNaN(n)) return '--'; return (n>=0?'+':'') + n.toFixed(2) + '%'; }
+function fmtMoney(n) {
+  if (n == null || isNaN(n) || n === 0) return '--';
+  if (n >= 1e9) return '$' + (n/1e9).toFixed(2) + 'B';
+  if (n >= 1e6) return '$' + (n/1e6).toFixed(1) + 'M';
+  return '$' + fmtNum(n);
+}
+function switchFund(fund, btn) {
+  saveData(); currentFund = fund;
+  document.querySelectorAll('.fund-tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  renderAll();
+}
+function renderAll() { renderProfile(); renderPerf(); renderNav(); renderBlocks(); recalc(); renderDailyTable(); }
+function renderProfile() {
+  const p = PROFILES[currentFund];
+  document.getElementById('profileCard').innerHTML = `
+    <div class="profile-header"><div>
+      <div class="profile-name">${p.name}</div>
+      <div class="profile-desc">${p.desc}</div>
+      <div style="margin-top:0.5rem">${p.badges.map(b=>'<span class="profile-badge">'+b+'</span>').join('')}</div>
+    </div></div>
+    <div class="profile-grid">
+      ${Object.entries(p.info).map(([k,v])=>`<div class="profile-item"><div class="pi-label">${k}</div><div class="pi-value">${v}</div></div>`).join('')}
+      ${Object.entries(p.metrics||{}).map(([k,v])=>`<div class="profile-item"><div class="pi-label">${k}</div><div class="pi-value">${v}</div></div>`).join('')}
+    </div>`;
+}
+function renderPerf() {
+  const p = PROFILES[currentFund];
+  document.getElementById('perfSection').innerHTML = `
+    <h3>Performance Histórica</h3>
+    <div class="perf-grid">
+      ${p.perf.map(x=>`<div class="perf-cell"><div class="pc-label">${x.label}</div><div class="pc-value ${x.value>=0?'positive':'negative'}">${fmtPct(x.value)}</div></div>`).join('')}
+    </div>`;
+}
+function renderNav() {
+  const fd = fundData[currentFund];
+  document.getElementById('navStart').value = fd.navStart ? fmtNum(fd.navStart) : '';
+  document.getElementById('navNow').value = fd.navNow ? fmtNum(fd.navNow) : '';
+}
+function renderBlocks() {
+  const fd = fundData[currentFund];
+  const container = document.getElementById('blocksContainer');
+  container.innerHTML = fd.blocks.map((block, bi) => {
+    const color = block.color || BLOCK_COLORS[bi % BLOCK_COLORS.length];
+    const rows = (block.positions || []).map((pos, pi) => `
+      <tr>
+        <td><input class="edit-input ticker-input" value="${pos.ticker||''}" onchange="updatePos(${bi},${pi},'ticker',this.value)"></td>
+        <td><input class="edit-input" value="${pos.qty||''}" onchange="updatePos(${bi},${pi},'qty',this.value)" style="width:110px"></td>
+        <td><input class="edit-input" value="${pos.price||''}" onchange="updatePos(${bi},${pi},'price',this.value)"></td>
+        <td class="calc-total" id="pt_${bi}_${pi}">--</td>
+        <td><input class="edit-input" value="${pos.varDiaria||''}" onchange="updatePos(${bi},${pi},'varDiaria',this.value)" style="width:65px;color:#22d3ee"></td>
+        <td class="calc-weight" id="pw_${bi}_${pi}">--</td>
+        <td class="calc-aporte" id="pa_${bi}_${pi}">--</td>
+        <td><button class="del-btn" onclick="deletePos(${bi},${pi})">✕</button></td>
+      </tr>`).join('');
+    return `<div class="block">
+      <div class="block-header">
+        <div class="block-title-area">
+          <div class="block-color" style="background:${color}"></div>
+          <input class="block-title-input" value="${block.name||'Categoría'}" onchange="updateBlockName(${bi},this.value)">
+          <span class="block-weight" id="bw_${bi}">--</span>
+          <span class="block-total" id="bt_${bi}">--</span>
+        </div>
+        <div class="block-actions">
+          <button class="btn-sm" onclick="addPos(${bi})">+ Activo</button>
+          <button class="btn-sm danger" onclick="deleteBlock(${bi})">✕</button>
+        </div>
+      </div>
+      <table>
+        <thead><tr>
+          <th style="text-align:left">Ticker</th><th>Cantidad</th><th>Precio</th>
+          <th>Monto</th><th>Var %</th><th>Pond %</th><th>Aporte %</th><th></th>
+        </tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>`;
+  }).join('');
+}
+function addBlock() {
+  const fd = fundData[currentFund]; const ci = fd.blocks.length;
+  fd.blocks.push({name:'Nueva Categoría',color:BLOCK_COLORS[ci%BLOCK_COLORS.length],positions:[]});
+  saveData(); renderBlocks(); recalc();
+}
+function deleteBlock(bi) {
+  if (!confirm('¿Eliminar esta categoría?')) return;
+  fundData[currentFund].blocks.splice(bi,1); saveData(); renderBlocks(); recalc();
+}
+function updateBlockName(bi,val){fundData[currentFund].blocks[bi].name=val;saveData();recalc();}
+function addPos(bi){fundData[currentFund].blocks[bi].positions.push({ticker:'',qty:'',price:''});saveData();renderBlocks();recalc();}
+function deletePos(bi,pi){fundData[currentFund].blocks[bi].positions.splice(pi,1);saveData();renderBlocks();recalc();}
+function updatePos(bi,pi,field,val){fundData[currentFund].blocks[bi].positions[pi][field]=val;saveData();recalc();}
+
+function recalc() {
+  const fd = fundData[currentFund];
+  const navS = parseNum(document.getElementById('navStart').value);
+  const navN = parseNum(document.getElementById('navNow').value);
+  const ytdEl = document.getElementById('ytdDisplay');
+  if (navS && navN) {
+    const ytd = ((navN-navS)/navS)*100;
+    ytdEl.textContent = fmtPct(ytd);
+    ytdEl.className = 'nav-ytd '+(ytd>=0?'positive':'negative');
+    ytdEl.style.background = ytd>=0?'rgba(52,211,153,0.12)':'rgba(248,113,113,0.12)';
+  } else { ytdEl.textContent='--'; ytdEl.className='nav-ytd'; ytdEl.style.background='transparent'; }
+  let grandTotal=0;
+  fd.blocks.forEach((block,bi)=>{
+    let blockTotal=0;
+    (block.positions||[]).forEach((pos,pi)=>{const t=parseNum(pos.qty)*parseNum(pos.price);pos._total=t;blockTotal+=t;});
+    block._total=blockTotal; grandTotal+=blockTotal;
+  });
+  var aumEl=document.getElementById('aumDisplay');
+  aumEl.textContent = grandTotal>0?'$ '+grandTotal.toLocaleString('es-AR',{maximumFractionDigits:0}):'$ 0';
+  fd.blocks.forEach((block,bi)=>{
+    (block.positions||[]).forEach((pos,pi)=>{
+      const tEl=document.getElementById('pt_'+bi+'_'+pi);
+      const wEl=document.getElementById('pw_'+bi+'_'+pi);
+      const aEl=document.getElementById('pa_'+bi+'_'+pi);
+      const pond=grandTotal?(pos._total/grandTotal)*100:0;
+      const varD=parseNum(pos.varDiaria);
+      const aporte=pond*varD/100;
+      if(tEl)tEl.textContent=fmtMoney(pos._total);
+      if(wEl)wEl.textContent=grandTotal?pond.toFixed(2)+'%':'--';
+      if(aEl){if(varD){aEl.textContent=aporte.toFixed(4)+'%';aEl.style.color=aporte>=0?'#34d399':'#f87171';}else{aEl.textContent='--';aEl.style.color='';}}
+    });
+    const bwEl=document.getElementById('bw_'+bi);const btEl=document.getElementById('bt_'+bi);
+    if(bwEl)bwEl.textContent=grandTotal?((block._total/grandTotal)*100).toFixed(1)+'%':'--';
+    if(btEl)btEl.textContent=fmtMoney(block._total);
+  });
+  const blockTotals=fd.blocks.map((b,bi)=>({name:b.name,total:b._total||0,color:b.color||BLOCK_COLORS[bi%BLOCK_COLORS.length]}));
+  document.getElementById('weightBars').innerHTML=blockTotals.filter(b=>b.total>0).sort((a,b)=>b.total-a.total).map(b=>{
+    const pct=grandTotal?(b.total/grandTotal*100):0;
+    return `<div class="weight-row"><span class="weight-label">${b.name}</span><div class="weight-bar-bg"><div class="weight-bar-fill" style="width:${Math.max(pct,2)}%;background:${b.color}">${pct.toFixed(1)}%</div></div><span class="weight-amount">${fmtMoney(b.total)}</span></div>`;
+  }).join('')||'<div style="color:var(--text-muted);font-size:0.8rem">Agregá categorías y activos</div>';
+  drawPie(blockTotals.filter(b=>b.total>0));
+}
+
+function drawPie(slices) {
+  const c=document.getElementById('pieChart');const ctx=c.getContext('2d');
+  const w=c.width,h=c.height,cx=w/2,cy=h/2,r=Math.min(w,h)/2-10;
+  ctx.clearRect(0,0,w,h);
+  const total=slices.reduce((s,x)=>s+x.total,0);
+  if(!total){ctx.fillStyle='#2a3550';ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.fill();ctx.fillStyle='#5a6580';ctx.font='12px Space Mono';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('Sin datos',cx,cy);return;}
+  let angle=-Math.PI/2;
+  slices.forEach(sl=>{
+    const sa=(sl.total/total)*Math.PI*2;
+    ctx.beginPath();ctx.moveTo(cx,cy);ctx.arc(cx,cy,r,angle,angle+sa);ctx.closePath();ctx.fillStyle=sl.color;ctx.fill();
+    if(sl.total/total>0.05){const mid=angle+sa/2,lx=cx+Math.cos(mid)*r*0.7,ly=cy+Math.sin(mid)*r*0.7;ctx.fillStyle='#0a0e17';ctx.font='bold 10px Space Mono';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText((sl.total/total*100).toFixed(0)+'%',lx,ly);}
+    angle+=sa;
+  });
+  ctx.beginPath();ctx.arc(cx,cy,r*0.48,0,Math.PI*2);ctx.fillStyle='#1a2235';ctx.fill();
+  ctx.fillStyle='#e8ecf4';ctx.font='bold 11px Space Mono';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(fmtMoney(total),cx,cy);
+}
+
+
+// ============================================================
+// DAILY NAV TRACKER
+// ============================================================
+let dailyTrackerOpen = false;
+
+function toggleDailyTracker() {
+  dailyTrackerOpen = !dailyTrackerOpen;
+  document.getElementById('dailyBody').style.display = dailyTrackerOpen ? 'block' : 'none';
+  const toggle = document.getElementById('dailyToggle');
+  toggle.textContent = dailyTrackerOpen ? '▲' : '▼';
+}
+
+function getDailyKey() {
+  return 'sc_galileo_daily_' + currentFund;
+}
+
+function getDailyData() {
+  try {
+    const raw = localStorage.getItem(getDailyKey());
+    return raw ? JSON.parse(raw) : [];
+  } catch(e) { return []; }
+}
+
+function saveDailyData(data) {
+  localStorage.setItem(getDailyKey(), JSON.stringify(data));
+}
+
+function registerDay() {
+  const dateVal = document.getElementById('dailyDate').value;
+  const navVal  = parseFloat(document.getElementById('dailyNAV').value.replace(',','.'));
+  const nota    = document.getElementById('dailyNota').value.trim();
+
+  if (!dateVal || !navVal || isNaN(navVal)) {
+    alert('Ingresá la fecha y el NAV del día');
+    return;
+  }
+
+  const data = getDailyData();
+
+  // Check if date already exists - update it
+  const existing = data.findIndex(d => d.date === dateVal);
+  if (existing >= 0) {
+    if (!confirm('Ya hay un registro para esta fecha. ¿Reemplazar?')) return;
+    data[existing] = { date: dateVal, nav: navVal, nota };
+  } else {
+    data.push({ date: dateVal, nav: navVal, nota });
+  }
+
+  // Sort by date ascending
+  data.sort((a, b) => a.date.localeCompare(b.date));
+  saveDailyData(data);
+
+  // Clear inputs
+  document.getElementById('dailyNAV').value = '';
+  document.getElementById('dailyNota').value = '';
+
+  renderDailyTable();
+}
+
+function deleteDayEntry(idx) {
+  const data = getDailyData();
+  data.splice(idx, 1);
+  saveDailyData(data);
+  renderDailyTable();
+}
+
+function clearAllDays() {
+  if (!confirm('¿Borrar todos los registros de este fondo?')) return;
+  localStorage.removeItem(getDailyKey());
+  renderDailyTable();
+}
+
+function renderDailyTable() {
+  const data = getDailyData();
+  const navStart = parseNum(document.getElementById('navStart').value);
+  const tbody = document.getElementById('dailyTableBody');
+  const emptyEl = document.getElementById('dailyEmpty');
+  const countEl = document.getElementById('dailyCount');
+  const ytdEl = document.getElementById('dailyYTD');
+
+  countEl.textContent = data.length + ' registro' + (data.length !== 1 ? 's' : '');
+
+  if (!data.length) {
+    tbody.innerHTML = '';
+    emptyEl.style.display = 'block';
+    ytdEl.textContent = 'YTD --';
+    ytdEl.style.background = 'transparent';
+    ytdEl.style.color = 'var(--text-muted)';
+    return;
+  }
+
+  emptyEl.style.display = 'none';
+
+  // Build rows from newest to oldest (display)
+  const displayData = [...data].reverse();
+
+  tbody.innerHTML = displayData.map((entry, di) => {
+    const realIdx = data.length - 1 - di; // index in original sorted array
+
+    // Find previous NAV
+    const prevEntry = realIdx > 0 ? data[realIdx - 1] : null;
+    const prevNav = prevEntry ? prevEntry.nav : navStart;
+
+    // Daily var
+    let varDiaria = null, varClass = '', varStr = '--';
+    if (prevNav && prevNav > 0) {
+      varDiaria = ((entry.nav - prevNav) / prevNav) * 100;
+      varClass = varDiaria >= 0 ? 'positive' : 'negative';
+      varStr = (varDiaria >= 0 ? '+' : '') + varDiaria.toFixed(2) + '%';
+    }
+
+    // YTD from navStart
+    let ytd = null, ytdClass = '', ytdStr = '--';
+    if (navStart && navStart > 0) {
+      ytd = ((entry.nav - navStart) / navStart) * 100;
+      ytdClass = ytd >= 0 ? 'positive' : 'negative';
+      ytdStr = (ytd >= 0 ? '+' : '') + ytd.toFixed(2) + '%';
+    }
+
+    // Format date
+    const d = new Date(entry.date + 'T12:00:00');
+    const dayNames = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+    const dayName = dayNames[d.getDay()];
+    const dateStr = dayName + ' ' + entry.date.split('-').reverse().slice(0,2).join('/');
+
+    return `<tr>
+      <td>${dateStr}</td>
+      <td class="td-nav">${entry.nav.toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2})}</td>
+      <td class="${varClass}" style="font-weight:600">${varStr}</td>
+      <td class="${ytdClass}" style="font-weight:700">${ytdStr}</td>
+      <td style="color:var(--text-muted);font-size:0.7rem;max-width:150px;overflow:hidden;text-overflow:ellipsis;">${entry.nota || ''}</td>
+      <td class="td-del"><button class="del-day-btn" onclick="deleteDayEntry(${realIdx})">✕</button></td>
+    </tr>`;
+  }).join('');
+
+  // Update header YTD with latest entry
+  const latest = data[data.length - 1];
+  if (navStart && navStart > 0 && latest) {
+    const ytd = ((latest.nav - navStart) / navStart) * 100;
+    ytdEl.textContent = 'YTD ' + (ytd >= 0 ? '+' : '') + ytd.toFixed(2) + '%';
+    ytdEl.style.background = ytd >= 0 ? 'rgba(52,211,153,0.12)' : 'rgba(248,113,113,0.12)';
+    ytdEl.style.color = ytd >= 0 ? 'var(--green)' : 'var(--red)';
+  } else {
+    ytdEl.textContent = 'YTD --';
+    ytdEl.style.background = 'transparent';
+    ytdEl.style.color = 'var(--text-muted)';
+  }
+}
+
+
+
+document.addEventListener('DOMContentLoaded', () => {
+  loadData();
+  if (!fundData.multi.blocks.length) {
+    fundData.multi.blocks = [
+      {name:'Acciones',color:'#4a9eff',positions:[]},
+      {name:'CEDEARs',color:'#22d3ee',positions:[]},
+      {name:'Dólar Linked',color:'#a78bfa',positions:[]},
+      {name:'CER / LECAPs',color:'#34d399',positions:[]},
+    ];
+    saveData();
+  }
+  var rentaHasPositions = fundData.renta.blocks.some(function(b){ return b.positions && b.positions.length > 0; });
+  if (!fundData.renta.blocks.length || !rentaHasPositions) {
+    fundData.renta.blocks = [
+      {name:'Acciones',color:'#4a9eff',positions:[
+        {ticker:'A3',qty:'10000',price:'2970',varDiaria:''},{ticker:'BBAR',qty:'12000',price:'6760',varDiaria:''},
+        {ticker:'CAPX',qty:'16075',price:'4370',varDiaria:''},{ticker:'GGAL',qty:'12600',price:'6400',varDiaria:''},
+        {ticker:'HARG',qty:'40000',price:'1590',varDiaria:''},{ticker:'LOMA',qty:'20000',price:'2978',varDiaria:''},
+        {ticker:'PAMP',qty:'15300',price:'5085',varDiaria:''},{ticker:'TGS',qty:'7300',price:'9800',varDiaria:''},
+      ]},
+      {name:'Bonos Soberanos USD',color:'#a78bfa',positions:[
+        {ticker:'AL30',qty:'247000',price:'867',varDiaria:''},{ticker:'GD38',qty:'3282',price:'1128',varDiaria:''},
+      ]},
+      {name:'Bonos CER / Duales',color:'#34d399',positions:[
+        {ticker:'TZXD6',qty:'291517',price:'2589',varDiaria:''},{ticker:'TZX26',qty:'494741',price:'3627',varDiaria:''},
+        {ticker:'T15E7',qty:'71649',price:'1281',varDiaria:''},{ticker:'TZXO6',qty:'78000',price:'1476',varDiaria:''},
+        {ticker:'TTJ26',qty:'1515500',price:'1208',varDiaria:''},{ticker:'TTS26',qty:'1494500',price:'1200',varDiaria:''},
+        {ticker:'TZV26',qty:'55000',price:'1388',varDiaria:''},
+      ]},
+      {name:'LECAPs / BONCAPs',color:'#22d3ee',positions:[
+        {ticker:'T30A7',qty:'219117',price:'1156',varDiaria:''},{ticker:'S30A6',qty:'600000',price:'1239',varDiaria:''},
+        {ticker:'S17A6',qty:'639000',price:'1080',varDiaria:''},{ticker:'S29Y6',qty:'200000',price:'1256',varDiaria:''},
+        {ticker:'S30N6',qty:'560000',price:'1068',varDiaria:''},{ticker:'D30A6',qty:'230000',price:'1387',varDiaria:''},
+      ]},
+      {name:'ONs / Corporativos',color:'#fb923c',positions:[
+        {ticker:'NHC1O',qty:'400000',price:'1018',varDiaria:''},{ticker:'CP39O',qty:'25000',price:'1377',varDiaria:''},
+        {ticker:'PIPEPLUS',qty:'1643237',price:'58',varDiaria:''},
+      ]},
+      {name:'Cash / Plazo Fijo',color:'#fbbf24',positions:[
+        {ticker:'PF BCO IND',qty:'1',price:'500000000',varDiaria:''},
+      ]},
+    ];
+    saveData();
+  }
+  // Set today's date in daily input
+  document.getElementById('dailyDate').value = new Date().toISOString().split('T')[0];
+  renderAll();
+});
+</script>
+
+<div class="bottom-nav">
+  <a href="index.html"><span class="bn-icon">🏠</span>Home</a>
+  <a href="precios-iol.html"><span class="bn-icon">🏦</span>Precios</a>
+  <a href="crypto.html"><span class="bn-icon">₿</span>Crypto</a>
+  <a href="cartera.html"><span class="bn-icon">💼</span>Cartera</a>
+  <a href="galileo.html" class="active"><span class="bn-icon">📊</span>Fondos</a>
+</div>
+</body>
+</html>
