@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SilverCloud | CAFCI NAV</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Space+Mono:wght@400;700&display=swap');
+  :root{
+    --bg:#060a12;--bg2:#0a0e17;--bg3:#111827;--card:#1a2235;--card2:#1f2a40;
+    --border:#2a3550;--text:#e8ecf4;--muted:#8892a8;--dim:#4a5568;
+    --blue:#4a9eff;--green:#34d399;--red:#f87171;--gold:#fbbf24;--cyan:#22d3ee;--purple:#a78bfa;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+
+  .topnav{background:var(--bg2);border-bottom:1px solid var(--border);padding:0.5rem 1.5rem;display:flex;align-items:center;gap:0.4rem;flex-wrap:wrap}
+  .topnav a{font-family:'Space Mono',monospace;font-size:0.7rem;padding:0.35rem 0.8rem;border-radius:6px;text-decoration:none;color:var(--dim);transition:all 0.15s;border:1px solid transparent}
+  .topnav a:hover{color:var(--text);background:var(--card)}
+  .topnav a.active{color:var(--blue);border-color:var(--blue);background:rgba(74,158,255,0.08)}
+  .topnav .home-link{color:var(--muted);font-weight:700;margin-right:0.5rem}
+
+  .container{max-width:1300px;margin:0 auto;padding:1.5rem}
+
+  .page-header{display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:1rem;margin-bottom:1.5rem}
+  .page-title{font-size:1.4rem;font-weight:700;letter-spacing:-0.5px}
+  .page-sub{font-family:'Space Mono',monospace;font-size:0.6rem;color:var(--dim);text-transform:uppercase;letter-spacing:1.5px;margin-top:0.2rem}
+
+  .toolbar{display:flex;gap:0.6rem;flex-wrap:wrap;align-items:center;margin-bottom:1.2rem}
+  .search-input{flex:1;min-width:200px;background:var(--card);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.85rem;padding:0.6rem 1rem;outline:none;transition:border-color 0.15s}
+  .search-input:focus{border-color:var(--blue)}
+  .search-input::placeholder{color:var(--dim)}
+  .btn{font-family:'Space Mono',monospace;font-size:0.62rem;padding:0.45rem 0.85rem;border-radius:7px;cursor:pointer;border:1px solid var(--border);background:var(--card);color:var(--muted);transition:all 0.15s;text-transform:uppercase;letter-spacing:0.5px;white-space:nowrap}
+  .btn:hover,.btn.active{border-color:var(--blue);color:var(--blue);background:rgba(74,158,255,0.08)}
+  .btn-green{border-color:var(--green);color:var(--green);background:rgba(52,211,153,0.06)}
+  .btn-green:hover{background:rgba(52,211,153,0.14)}
+  .btn-gold{border-color:var(--gold);color:var(--gold);background:rgba(251,191,36,0.06)}
+  .btn-gold:hover{background:rgba(251,191,36,0.14)}
+  .btn:disabled{opacity:0.4;cursor:not-allowed}
+
+  .source-tabs{display:flex;gap:0.4rem;margin-bottom:1rem}
+  .src-tab{font-family:'Space Mono',monospace;font-size:0.65rem;padding:0.4rem 0.9rem;border-radius:8px;cursor:pointer;border:1px solid var(--border);background:var(--card);color:var(--muted);transition:all 0.2s}
+  .src-tab.active{background:var(--bg3);border-color:var(--blue);color:var(--text)}
+  .src-dot{width:7px;height:7px;border-radius:50%;display:inline-block;margin-right:5px;vertical-align:middle}
+
+  .status-bar{display:flex;align-items:center;gap:0.8rem;padding:0.55rem 1rem;background:var(--bg2);border:1px solid var(--border);border-radius:8px;margin-bottom:1rem;flex-wrap:wrap}
+  .status-dot{width:8px;height:8px;border-radius:50%}
+  .status-text{font-family:'Space Mono',monospace;font-size:0.62rem;color:var(--muted);flex:1}
+  .status-count{font-family:'Space Mono',monospace;font-size:0.62rem;color:var(--blue)}
+
+  .section-label{font-family:'Space Mono',monospace;font-size:0.58rem;color:var(--dim);text-transform:uppercase;letter-spacing:2px;margin-bottom:0.6rem}
+
+  .fund-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:0.7rem;margin-bottom:1.5rem}
+  .fund-card{background:var(--card);border:1px solid var(--border);border-radius:11px;padding:0.9rem 1.1rem;transition:border-color 0.15s;position:relative}
+  .fund-card:hover{border-color:rgba(74,158,255,0.3);background:var(--card2)}
+  .fund-card.is-fav{border-color:rgba(251,191,36,0.3)}
+  .fund-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:0.55rem;gap:0.4rem}
+  .fund-name{font-size:0.82rem;font-weight:600;line-height:1.3;flex:1}
+  .fund-badge{font-family:'Space Mono',monospace;font-size:0.52rem;padding:0.15rem 0.45rem;border-radius:4px;text-transform:uppercase;letter-spacing:0.4px;flex-shrink:0;white-space:nowrap}
+  .b-mixta{background:rgba(167,139,250,0.12);color:#a78bfa}
+  .b-fija{background:rgba(52,211,153,0.12);color:#34d399}
+  .b-variable{background:rgba(251,191,36,0.12);color:#fbbf24}
+  .b-dinero{background:rgba(74,158,255,0.12);color:#4a9eff}
+  .b-cafci{background:rgba(34,211,238,0.12);color:#22d3ee}
+  .fund-body{display:flex;justify-content:space-between;align-items:flex-end}
+  .fund-vcp-lbl{font-family:'Space Mono',monospace;font-size:0.52rem;color:var(--dim);text-transform:uppercase;letter-spacing:0.4px;margin-bottom:0.15rem}
+  .fund-vcp{font-family:'Space Mono',monospace;font-size:1.15rem;font-weight:700;color:var(--gold)}
+  .fund-meta-right{text-align:right}
+  .fund-date{font-family:'Space Mono',monospace;font-size:0.6rem;color:var(--dim)}
+  .fund-pat{font-family:'Space Mono',monospace;font-size:0.62rem;color:var(--muted);margin-top:0.2rem}
+  .fund-source{font-family:'Space Mono',monospace;font-size:0.52rem;color:var(--dim);margin-top:0.15rem}
+  .fav-btn{position:absolute;top:0.65rem;right:0.65rem;background:none;border:none;cursor:pointer;font-size:0.8rem;opacity:0.25;transition:opacity 0.15s;line-height:1;color:var(--gold)}
+  .fav-btn:hover{opacity:0.7}
+  .fav-btn.on{opacity:1}
+
+  .fund-table{width:100%;border-collapse:collapse;background:var(--card);border:1px solid var(--border);border-radius:11px;overflow:hidden}
+  .fund-table thead th{font-family:'Space Mono',monospace;font-size:0.52rem;text-transform:uppercase;letter-spacing:0.4px;color:var(--dim);padding:0.55rem 0.9rem;text-align:left;border-bottom:1px solid var(--border);background:var(--bg2)}
+  .fund-table tbody tr{border-bottom:1px solid rgba(42,53,80,0.35);transition:background 0.1s}
+  .fund-table tbody tr:hover{background:var(--card2)}
+  .fund-table tbody td{padding:0.45rem 0.9rem;font-size:0.8rem}
+  .td-vcp{font-family:'Space Mono',monospace;font-size:0.82rem;font-weight:700;color:var(--gold);text-align:right}
+  .td-date{font-family:'Space Mono',monospace;font-size:0.68rem;color:var(--dim)}
+  .td-pat{font-family:'Space Mono',monospace;font-size:0.68rem;color:var(--muted);text-align:right}
+  .td-src{font-family:'Space Mono',monospace;font-size:0.58rem;color:var(--dim)}
+
+  .import-box{background:var(--bg2);border:2px dashed var(--border);border-radius:12px;padding:1.5rem;text-align:center;margin-bottom:1.5rem;transition:border-color 0.2s}
+  .import-box.drag-over{border-color:var(--blue)}
+  .import-box-title{font-family:'Space Mono',monospace;font-size:0.75rem;color:var(--muted);margin-bottom:0.5rem}
+  .import-box-sub{font-size:0.75rem;color:var(--dim);margin-bottom:1rem}
+  .import-link{color:var(--blue);text-decoration:none;font-size:0.75rem}
+  .import-link:hover{text-decoration:underline}
+
+  .view-toggle{display:flex;gap:0.3rem}
+  .vbtn{background:var(--card);border:1px solid var(--border);color:var(--dim);border-radius:6px;padding:0.32rem 0.55rem;cursor:pointer;font-size:0.78rem;transition:all 0.15s}
+  .vbtn.active{background:rgba(74,158,255,0.1);border-color:var(--blue);color:var(--blue)}
+
+  .empty{text-align:center;padding:2.5rem;color:var(--dim);font-family:'Space Mono',monospace;font-size:0.72rem}
+  .loading{text-align:center;padding:2.5rem;color:var(--dim);font-family:'Space Mono',monospace;font-size:0.72rem}
+
+  .bottom-nav{display:none;position:fixed;bottom:0;left:0;right:0;background:#0a0e17;border-top:1px solid #2a3550;z-index:50;padding:0.4rem 0.5rem 0.6rem;justify-content:space-around;align-items:center}
+  .bottom-nav a{display:flex;flex-direction:column;align-items:center;gap:0.15rem;text-decoration:none;color:#5a6580;font-size:0.55rem;font-family:'Space Mono',monospace;padding:0.3rem 0.4rem;border-radius:8px;transition:all 0.15s;min-width:50px}
+  .bottom-nav a:hover,.bottom-nav a.active{color:#4a9eff}
+  .bottom-nav a .bn-icon{font-size:1.2rem;line-height:1}
+  @media(max-width:768px){.bottom-nav{display:flex}body{padding-bottom:70px}.fund-grid{grid-template-columns:1fr}.container{padding:0.8rem}}
+  .footer{text-align:center;padding:1rem 0 0.5rem;color:var(--dim);font-size:0.6rem;font-family:'Space Mono',monospace}
+</style>
+</head>
+<body>
+
+<div class="topnav">
+  <a href="index.html" class="home-link">← SC</a>
+  <a href="precios-iol.html">Precios IOL</a>
+  <a href="galileo.html">Galileo Fondos</a>
+  <a href="cafci.html" class="active">CAFCI NAV</a>
+</div>
+
+<div class="container">
+  <div class="page-header">
+    <div>
+      <div class="page-title">CAFCI — NAV Fondos</div>
+      <div class="page-sub">ArgentinaDatos API + Planilla CAFCI diaria</div>
+    </div>
+    <div style="display:flex;gap:0.5rem;align-items:center;flex-wrap:wrap">
+      <button class="btn btn-gold" onclick="document.getElementById('fileInput').click()">↑ Importar planilla CAFCI</button>
+      <input type="file" id="fileInput" accept=".xlsx,.xls" style="display:none" onchange="importCAFCI(event)">
+      <a class="btn btn-gold" href="https://api.pub.cafci.org.ar/pb_get" target="_blank" style="text-decoration:none">↓ Descargar planilla</a>
+    </div>
+  </div>
+
+  <!-- Import hint box — shown only when no CAFCI data loaded -->
+  <div class="import-box" id="importHint" style="display:none"
+    ondragover="event.preventDefault();this.classList.add('drag-over')"
+    ondragleave="this.classList.remove('drag-over')"
+    ondrop="event.preventDefault();this.classList.remove('drag-over');handleDrop(event)">
+    <div class="import-box-title">Importar planilla diaria de CAFCI</div>
+    <div class="import-box-sub">Descargá el Excel desde CAFCI y arrastralo acá, o usá el botón de arriba</div>
+    <a class="import-link" href="https://api.pub.cafci.org.ar/pb_get" target="_blank">→ Descargar planilla de hoy desde CAFCI</a>
+  </div>
+
+  <!-- Source tabs -->
+  <div class="source-tabs">
+    <div class="src-tab active" id="tab-all" onclick="setSourceTab('all',this)">
+      <span class="src-dot" style="background:var(--blue)"></span>Todos
+    </div>
+    <div class="src-tab" id="tab-api" onclick="setSourceTab('api',this)">
+      <span class="src-dot" style="background:var(--green)"></span>ArgentinaDatos
+    </div>
+    <div class="src-tab" id="tab-cafci" onclick="setSourceTab('cafci',this)">
+      <span class="src-dot" style="background:var(--cyan)"></span>Planilla CAFCI
+    </div>
+  </div>
+
+  <!-- Toolbar -->
+  <div class="toolbar">
+    <input class="search-input" id="searchInput" placeholder="Buscar fondo..." oninput="render()">
+    <button class="btn" id="f-todos" onclick="setFilter('todos',this)">Todos</button>
+    <button class="btn" id="f-mixta" onclick="setFilter('mixta',this)">Mixta</button>
+    <button class="btn" id="f-fija" onclick="setFilter('fija',this)">Renta Fija</button>
+    <button class="btn" id="f-dinero" onclick="setFilter('dinero',this)">Dinero</button>
+    <button class="btn" id="f-variable" onclick="setFilter('variable',this)">Acciones</button>
+    <div class="view-toggle" style="margin-left:auto">
+      <button class="vbtn active" id="vGrid" onclick="setView('grid')">⊞</button>
+      <button class="vbtn" id="vTable" onclick="setView('table')">☰</button>
+    </div>
+    <button class="btn btn-green" id="refreshBtn" onclick="loadAPI()">↻ Actualizar</button>
+  </div>
+
+  <!-- Status -->
+  <div class="status-bar">
+    <div class="status-dot" id="sDot" style="background:var(--dim)"></div>
+    <span class="status-text" id="sText">Cargando datos...</span>
+    <span class="status-count" id="sCount"></span>
+  </div>
+
+  <!-- Favorites -->
+  <div id="favsSection" style="display:none">
+    <div class="section-label">★ Favoritos</div>
+    <div class="fund-grid" id="favsGrid"></div>
+  </div>
+
+  <!-- Main results -->
+  <div class="section-label" id="allLabel">Fondos</div>
+  <div id="mainContainer"><div class="loading" id="loadingEl">Cargando fondos...</div></div>
+
+  <div class="footer">SilverCloud © 2026 · ArgentinaDatos (api.argentinadatos.com) + Planilla CAFCI (api.pub.cafci.org.ar)</div>
+</div>
+
+<div class="bottom-nav">
+  <a href="index.html"><span class="bn-icon">🏠</span>Home</a>
+  <a href="precios-iol.html"><span class="bn-icon">🏦</span>Precios</a>
+  <a href="galileo.html"><span class="bn-icon">📊</span>Fondos</a>
+  <a href="cafci.html" class="active"><span class="bn-icon">📋</span>CAFCI</a>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script>
+let apiFunds = [];
+let cafciFunds = [];
+let favs = new Set(JSON.parse(localStorage.getItem('sc_cafci_favs2') || '[]'));
+let currentFilter = 'todos';
+let currentView = 'grid';
+let currentSource = 'all';
+
+const DEFAULT_FAVS = [
+  'Galileo Multimercado IV - Clase A',
+  'Galileo Renta - Clase A',
+  'Galileo Event Driven - Clase A',
+  'Galileo Income - Clase A',
+  'Compass Renta Mixta - Clase B',
+  'Consultatio Deuda Argentina - Clase A',
+  'Balanz Capital Ahorro - Clase A',
+  'Galileo Renta Fija - Clase A',
+  'Balanz Performance II - Clase A',
+];
+
+const ENDPOINTS = [
+  { url:'https://api.argentinadatos.com/v1/finanzas/fci/rentaMixta/ultimo',   tipo:'mixta' },
+  { url:'https://api.argentinadatos.com/v1/finanzas/fci/rentaFija/ultimo',    tipo:'fija'  },
+  { url:'https://api.argentinadatos.com/v1/finanzas/fci/mercadoDinero/ultimo',tipo:'dinero'},
+  { url:'https://api.argentinadatos.com/v1/finanzas/fci/rentaVariable/ultimo',tipo:'variable'},
+];
+
+const META_KEYS = ['Tipo de','Region:','Duration:','Benchmark:','Moneda:','Fuente:','Horizonte:'];
+
+async function loadAPI() {
+  const btn = document.getElementById('refreshBtn');
+  btn.disabled = true;
+  setStatus('dim', 'Consultando ArgentinaDatos...');
+  apiFunds = [];
+  let ok = 0;
+
+  for (const ep of ENDPOINTS) {
+    try {
+      const res = await fetch(ep.url);
+      if (!res.ok) continue;
+      const data = await res.json();
+      const valid = data.filter(d =>
+        d.fondo && d.vcp > 0 &&
+        !META_KEYS.some(k => d.fondo.startsWith(k))
+      ).map(d => ({ ...d, tipo: ep.tipo, source: 'api' }));
+      apiFunds.push(...valid);
+      ok++;
+    } catch(e) {}
+  }
+
+  apiFunds.sort((a,b) => a.fondo.localeCompare(b.fondo,'es'));
+
+  try {
+    localStorage.setItem('sc_cafci_api', JSON.stringify({ ts: Date.now(), funds: apiFunds }));
+  } catch(e) {}
+
+  const fecha = apiFunds.find(f=>f.fecha)?.fecha || new Date().toLocaleDateString('es-AR');
+  setStatus('green', `ArgentinaDatos OK · ${fecha}`, apiFunds.length + ' fondos');
+
+  if (favs.size === 0) {
+    DEFAULT_FAVS.forEach(n => { if (apiFunds.find(f=>f.fondo===n)) favs.add(n); });
+    saveFavs();
+  }
+
+  document.getElementById('importHint').style.display = cafciFunds.length === 0 ? 'block' : 'none';
+  btn.disabled = false;
+  render();
+}
+
+// ── CAFCI Excel import ──────────────────────────────────────
+function importCAFCI(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  processXLSX(file);
+  e.target.value = '';
+}
+
+function handleDrop(e) {
+  const file = e.dataTransfer.files[0];
+  if (file) processXLSX(file);
+}
+
+function processXLSX(file) {
+  setStatus('gold', 'Procesando planilla CAFCI...');
+  const reader = new FileReader();
+  reader.onload = function(ev) {
+    try {
+      const wb = XLSX.read(ev.target.result, { type: 'array' });
+      const ws = wb.Sheets[wb.SheetNames[0]];
+      const rows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' });
+
+      cafciFunds = [];
+      let headerRow = -1;
+
+      // Find header row
+      for (let i = 0; i < Math.min(20, rows.length); i++) {
+        const row = rows[i].map(c => String(c).toLowerCase());
+        if (row.some(c => c.includes('fondo') || c.includes('nombre')) &&
+            row.some(c => c.includes('vcp') || c.includes('valor') || c.includes('cuota'))) {
+          headerRow = i;
+          break;
+        }
+      }
+
+      if (headerRow === -1) {
+        // Try to parse without header detection — take row 0 as header
+        headerRow = 0;
+      }
+
+      const headers = rows[headerRow].map(c => String(c).toLowerCase().trim());
+      const iNombre = headers.findIndex(h => h.includes('fondo') || h.includes('nombre') || h.includes('denominacion'));
+      const iVCP    = headers.findIndex(h => h.includes('vcp') || h.includes('valor cuota') || h.includes('cuotaparte'));
+      const iFecha  = headers.findIndex(h => h.includes('fecha'));
+      const iPatr   = headers.findIndex(h => h.includes('patrimonio') || h.includes('aum'));
+
+      if (iNombre === -1 || iVCP === -1) {
+        // Fallback: show raw columns so user can see structure
+        setStatus('red', 'No se pudo detectar columnas. Encabezados encontrados: ' + rows[headerRow]?.slice(0,8).join(', '));
+        return;
+      }
+
+      for (let i = headerRow + 1; i < rows.length; i++) {
+        const row = rows[i];
+        const nombre = String(row[iNombre] || '').trim();
+        const vcpRaw = row[iVCP];
+        const vcp = parseFloat(String(vcpRaw).replace(',','.')) || 0;
+        if (!nombre || vcp <= 0) continue;
+        const fecha = iFecha >= 0 ? String(row[iFecha]).trim() : '';
+        const patrimonio = iPatr >= 0 ? parseFloat(String(row[iPatr]).replace(/\./g,'').replace(',','.')) || 0 : 0;
+        cafciFunds.push({ fondo: nombre, vcp, fecha, patrimonio, tipo: 'cafci', source: 'cafci' });
+      }
+
+      cafciFunds.sort((a,b) => a.fondo.localeCompare(b.fondo,'es'));
+      localStorage.setItem('sc_cafci_xlsx', JSON.stringify({ ts: Date.now(), funds: cafciFunds }));
+
+      const fecha = cafciFunds.find(f=>f.fecha)?.fecha || '';
+      setStatus('cyan', `Planilla CAFCI importada · ${fecha}`, cafciFunds.length + ' fondos CAFCI + ' + apiFunds.length + ' API');
+      document.getElementById('importHint').style.display = 'none';
+
+      // Add default favs from CAFCI too
+      DEFAULT_FAVS.forEach(n => { if (cafciFunds.find(f=>f.fondo===n)) favs.add(n); });
+      saveFavs();
+      render();
+    } catch(err) {
+      setStatus('red', 'Error procesando el archivo: ' + err.message);
+    }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+// ── RENDER ──────────────────────────────────────────────────
+function getAll() {
+  if (currentSource === 'api')   return apiFunds;
+  if (currentSource === 'cafci') return cafciFunds;
+  // Merge: prefer API, supplement with CAFCI-only
+  const apiNames = new Set(apiFunds.map(f=>f.fondo.toLowerCase()));
+  const cafciOnly = cafciFunds.filter(f => !apiNames.has(f.fondo.toLowerCase()));
+  return [...apiFunds, ...cafciOnly];
+}
+
+function getFiltered() {
+  const q = document.getElementById('searchInput').value.toLowerCase().trim();
+  return getAll().filter(f => {
+    const matchTipo = currentFilter === 'todos' || f.tipo === currentFilter;
+    const matchQ = !q || f.fondo.toLowerCase().includes(q);
+    return matchTipo && matchQ;
+  });
+}
+
+function render() {
+  const filtered = getFiltered();
+  const allFunds = getAll();
+  const container = document.getElementById('mainContainer');
+  const favsSection = document.getElementById('favsSection');
+  const favsGrid = document.getElementById('favsGrid');
+  const label = document.getElementById('allLabel');
+  document.getElementById('loadingEl')?.remove();
+
+  const isSearching = document.getElementById('searchInput').value.trim() !== '';
+  const favFunds = allFunds.filter(f => favs.has(f.fondo));
+
+  if (favFunds.length > 0 && currentFilter === 'todos' && !isSearching && currentSource !== 'cafci') {
+    favsSection.style.display = 'block';
+    favsGrid.innerHTML = favFunds.map(f => cardHTML(f)).join('');
+  } else {
+    favsSection.style.display = 'none';
+  }
+
+  label.textContent = 'Todos los fondos (' + filtered.length + ')';
+
+  if (filtered.length === 0) {
+    container.innerHTML = '<div class="empty">Sin resultados</div>';
+    return;
+  }
+
+  if (currentView === 'grid') {
+    container.innerHTML = '<div class="fund-grid">' + filtered.map(f => cardHTML(f)).join('') + '</div>';
+  } else {
+    container.innerHTML = tableHTML(filtered);
+  }
+}
+
+function fmtVCP(n) {
+  if (!n) return '--';
+  return n.toLocaleString('es-AR', { minimumFractionDigits: 3, maximumFractionDigits: 3 });
+}
+function fmtPat(n) {
+  if (!n || n === 0) return '';
+  if (n >= 1e12) return '$' + (n/1e12).toFixed(2) + 'B';
+  if (n >= 1e9)  return '$' + (n/1e9).toFixed(1) + 'M';
+  if (n >= 1e6)  return '$' + (n/1e6).toFixed(0) + 'K';
+  return '$' + n.toLocaleString('es-AR',{maximumFractionDigits:0});
+}
+function badgeHTML(tipo) {
+  const map = { mixta:['b-mixta','Mixta'], fija:['b-fija','R.Fija'], dinero:['b-dinero','Dinero'], variable:['b-variable','Acc.'], cafci:['b-cafci','CAFCI'] };
+  const [cls,lbl] = map[tipo] || ['b-cafci',tipo];
+  return '<span class="fund-badge '+cls+'">'+lbl+'</span>';
+}
+function sourceLabel(s) {
+  return s === 'cafci' ? 'Planilla CAFCI' : 'ArgentinaDatos';
+}
+
+function cardHTML(f) {
+  const isFav = favs.has(f.fondo);
+  return `<div class="fund-card${isFav?' is-fav':''}">
+    <button class="fav-btn${isFav?' on':''}" onclick="toggleFav(${JSON.stringify(f.fondo)},this)">★</button>
+    <div class="fund-top">
+      <div class="fund-name">${f.fondo}</div>
+      ${badgeHTML(f.tipo)}
+    </div>
+    <div class="fund-body">
+      <div>
+        <div class="fund-vcp-lbl">VCP</div>
+        <div class="fund-vcp">${fmtVCP(f.vcp)}</div>
+      </div>
+      <div class="fund-meta-right">
+        <div class="fund-date">${f.fecha||'--'}</div>
+        <div class="fund-pat">${fmtPat(f.patrimonio)}</div>
+        <div class="fund-source">${sourceLabel(f.source)}</div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function tableHTML(funds) {
+  return `<table class="fund-table">
+    <thead><tr>
+      <th>Fondo</th><th>Tipo</th>
+      <th style="text-align:right">VCP</th>
+      <th>Fecha</th>
+      <th style="text-align:right">Patrimonio</th>
+      <th>Fuente</th>
+    </tr></thead>
+    <tbody>
+      ${funds.map(f=>`<tr>
+        <td style="font-weight:500">${f.fondo}</td>
+        <td>${badgeHTML(f.tipo)}</td>
+        <td class="td-vcp">${fmtVCP(f.vcp)}</td>
+        <td class="td-date">${f.fecha||'--'}</td>
+        <td class="td-pat">${fmtPat(f.patrimonio)}</td>
+        <td class="td-src">${sourceLabel(f.source)}</td>
+      </tr>`).join('')}
+    </tbody>
+  </table>`;
+}
+
+// ── HELPERS ─────────────────────────────────────────────────
+function toggleFav(name, btn) {
+  favs.has(name) ? favs.delete(name) : favs.add(name);
+  btn.classList.toggle('on', favs.has(name));
+  saveFavs(); render();
+}
+function saveFavs() { localStorage.setItem('sc_cafci_favs2', JSON.stringify([...favs])); }
+
+function setFilter(f, btn) {
+  currentFilter = f;
+  document.querySelectorAll('[id^="f-"]').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  render();
+}
+function setView(v) {
+  currentView = v;
+  document.getElementById('vGrid').classList.toggle('active', v==='grid');
+  document.getElementById('vTable').classList.toggle('active', v==='table');
+  render();
+}
+function setSourceTab(s, el) {
+  currentSource = s;
+  document.querySelectorAll('.src-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  render();
+}
+function setStatus(color, text, count='') {
+  const colors = { green:'#34d399', dim:'#4a5568', gold:'#fbbf24', red:'#f87171', cyan:'#22d3ee' };
+  document.getElementById('sDot').style.background = colors[color] || colors.dim;
+  document.getElementById('sText').textContent = text;
+  document.getElementById('sCount').textContent = count;
+}
+
+// ── INIT ─────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  // Load cached CAFCI xlsx
+  try {
+    const cached = JSON.parse(localStorage.getItem('sc_cafci_xlsx') || '{}');
+    if (cached.funds && cached.funds.length > 0) {
+      cafciFunds = cached.funds;
+      document.getElementById('importHint').style.display = 'none';
+    }
+  } catch(e) {}
+
+  // Load cached API or fetch fresh
+  try {
+    const cached = JSON.parse(localStorage.getItem('sc_cafci_api') || '{}');
+    if (cached.funds && cached.ts && (Date.now() - cached.ts) < 4*3600*1000) {
+      apiFunds = cached.funds;
+      const fecha = apiFunds.find(f=>f.fecha)?.fecha || '';
+      const mins = Math.round((Date.now()-cached.ts)/60000);
+      setStatus('green', `Caché · ${fecha} · ${mins}min`, apiFunds.length + ' fondos');
+      if (favs.size === 0) { DEFAULT_FAVS.forEach(n => { if (apiFunds.find(f=>f.fondo===n)) favs.add(n); }); saveFavs(); }
+      document.getElementById('loadingEl')?.remove();
+      render();
+      return;
+    }
+  } catch(e) {}
+
+  loadAPI();
+});
+</script>
+</body>
+</html>
