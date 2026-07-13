@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="es-AR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SilverCloud · Dólares Inversiones</title>
+<style>
+  :root{
+    --bg:#080C13;
+    --panel:#0C1119;
+    --card:#0E1520;
+    --line:#1B2331;
+    --line-soft:#151C27;
+    --ink:#E6EAF1;
+    --ink-2:#9AA5B7;
+    --ink-3:#5F6B7E;
+    --accent:#4A9EFF;
+    --suba:#2ED09A;
+    --baja:#F0565A;
+    --gd35:#EDA100;
+    --gd38:#3FBF56;
+    --gd41:#8B7BEA;
+    --prov:#8B7BEA;
+    --corp:#E0A82E;
+    --fondo:#7C8698;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    background:var(--bg);color:var(--ink);
+    font-family:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased;
+    display:flex;min-height:100vh;
+  }
+  .mono{font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace}
+  .num{font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-variant-numeric:tabular-nums}
+
+  /* ---------- Sidebar ---------- */
+  aside{
+    width:190px;flex:0 0 190px;background:var(--panel);
+    border-right:1px solid var(--line);min-height:100vh;
+  }
+  .brand{display:flex;align-items:center;gap:10px;padding:16px 14px;border-bottom:1px solid var(--line)}
+  .logo{width:30px;height:30px;border-radius:8px;background:var(--accent);display:grid;place-items:center;
+        font-weight:700;font-size:12px;color:#06101E;letter-spacing:.02em}
+  .brand-n{font-weight:600;font-size:14px;letter-spacing:.01em}
+  .brand-s{font-size:8px;letter-spacing:.16em;color:var(--ink-3);text-transform:uppercase}
+  .grp{padding:16px 14px 6px;font-size:9px;letter-spacing:.16em;color:var(--ink-3);text-transform:uppercase}
+  nav a{
+    display:flex;align-items:center;gap:9px;padding:7px 14px;color:var(--ink-2);
+    text-decoration:none;font-size:13px;border-left:2px solid transparent;
+  }
+  nav a:hover{background:#111826;color:var(--ink)}
+  nav a.on{background:#111C2C;color:var(--ink);border-left-color:var(--accent)}
+  .ico{width:16px;text-align:center;font-size:13px;opacity:.85}
+  .tag{margin-left:auto;font-size:8px;font-weight:700;letter-spacing:.08em;padding:2px 5px;border-radius:3px}
+  .t-live{background:rgba(46,208,154,.15);color:var(--suba)}
+  .t-edit{background:rgba(224,168,46,.15);color:var(--corp)}
+  .t-new{background:rgba(74,158,255,.15);color:var(--accent)}
+
+  /* ---------- Main ---------- */
+  main{flex:1;padding:22px 26px 40px;min-width:0}
+  .head{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;flex-wrap:wrap;
+        padding-bottom:14px;border-bottom:1px solid var(--line)}
+  h1{font-size:19px;font-weight:600;letter-spacing:-.01em}
+  .sub{font-size:12px;color:var(--ink-3);margin-top:3px}
+  .asof{font-size:11px;color:var(--ink-3)}
+  .asof b{color:var(--ink-2);font-weight:500}
+
+  .bar{display:flex;gap:6px;margin:16px 0 4px;flex-wrap:wrap;align-items:center}
+  .chip{background:transparent;border:1px solid var(--line);color:var(--ink-2);
+        padding:5px 11px;border-radius:6px;font-size:12px;cursor:pointer;font-family:inherit}
+  .chip:hover{border-color:#2A3547;color:var(--ink)}
+  .chip.on{background:#132133;border-color:var(--accent);color:var(--ink)}
+  .spacer{flex:1}
+  .sortlab{font-size:11px;color:var(--ink-3);margin-right:2px}
+
+  table{width:100%;border-collapse:collapse;margin-top:12px}
+  th{
+    text-align:left;font-size:9px;letter-spacing:.13em;text-transform:uppercase;color:var(--ink-3);
+    font-weight:600;padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap;
+  }
+  th.r{text-align:right}
+  th.s{cursor:pointer;user-select:none}
+  th.s:hover{color:var(--ink-2)}
+  th .arw{opacity:0;margin-left:3px}
+  th.act .arw{opacity:1;color:var(--accent)}
+  td{padding:9px 10px;border-bottom:1px solid var(--line-soft);vertical-align:middle}
+  tbody tr:hover td{background:#0E1621}
+  td.r{text-align:right}
+
+  .blk td{
+    background:#101825;border-bottom:1px solid var(--line);
+    font-size:10px;letter-spacing:.14em;text-transform:uppercase;font-weight:600;color:var(--ink);
+    padding:8px 10px;
+  }
+  .sub-r td{
+    background:transparent;border-bottom:1px solid var(--line-soft);
+    font-size:10px;letter-spacing:.09em;text-transform:uppercase;font-weight:600;
+    padding:11px 10px 5px;
+  }
+  .tick{font-weight:600;font-size:14px}
+  .desc{color:var(--ink-2);font-size:12.5px}
+  .up{color:var(--suba);font-weight:600}
+  .dn{color:var(--baja);font-weight:600}
+  .ytm{font-weight:600;font-size:14px}
+  .dur{color:var(--ink-2)}
+  .empty{color:var(--ink-3)}
+
+  .pf{display:inline-block;font-size:10px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;
+      padding:3px 8px;border-radius:4px;border:1px solid}
+  .pf-c{color:#5BB5F0;background:rgba(91,181,240,.10);border-color:rgba(91,181,240,.28)}
+  .pf-m{color:#E0A82E;background:rgba(224,168,46,.10);border-color:rgba(224,168,46,.28)}
+  .pf-a{color:#F0565A;background:rgba(240,86,90,.10);border-color:rgba(240,86,90,.28)}
+
+  .foot{margin-top:16px;font-size:10.5px;color:var(--ink-3);line-height:1.7}
+</style>
+</head>
+<body>
+
+<aside>
+  <div class="brand">
+    <div class="logo">SC</div>
+    <div>
+      <div class="brand-n">SilverCloud</div>
+      <div class="brand-s mono">Wealth Platform</div>
+    </div>
+  </div>
+
+  <div class="grp mono">Mercados</div>
+  <nav>
+    <a href="#"><span class="ico">₿</span>Crypto<span class="tag t-live">LIVE</span></a>
+    <a href="#"><span class="ico">📈</span>Curva Tasa Fija<span class="tag t-edit">EDIT</span></a>
+    <a href="#"><span class="ico">🏢</span>Precios IOL<span class="tag t-live">LIVE</span></a>
+    <a href="#"><span class="ico">💼</span>Mi Cartera<span class="tag t-edit">EDIT</span></a>
+    <a href="#"><span class="ico">📊</span>Galileo Fondos<span class="tag t-edit">EDIT</span></a>
+    <a class="on" href="#"><span class="ico">💵</span>Dólares Inv.<span class="tag t-new">NEW</span></a>
+  </nav>
+
+  <div class="grp mono">Herramientas</div>
+  <nav>
+    <a href="#"><span class="ico">🎯</span>Carteras Modelo<span class="tag t-new">NEW</span></a>
+    <a href="#"><span class="ico">🪙</span>ROA Cartera<span class="tag t-new">NEW</span></a>
+    <a href="#"><span class="ico">📋</span>Propuesta Inv.<span class="tag t-new">NEW</span></a>
+    <a href="#"><span class="ico">📐</span>ROA<span class="tag t-new">NEW</span></a>
+    <a href="#"><span class="ico">📄</span>Anexo Reco<span class="tag t-new">NEW</span></a>
+  </nav>
+</aside>
+
+<main>
+  <div class="head">
+    <div>
+      <h1>Dólares Inversiones</h1>
+      <div class="sub">Opciones para dólares en cuenta — dentro y fuera de Argentina</div>
+    </div>
+    <div class="asof">Datos al <b class="num">15/07/2026</b> · Cierre previo</div>
+  </div>
+
+  <div class="bar">
+    <button class="chip on" data-f="all">Todos</button>
+    <button class="chip" data-f="arg">Argentina</button>
+    <button class="chip" data-f="ext">Fuera de Argentina</button>
+    <div class="spacer"></div>
+    <span class="sortlab">Ordenar:</span>
+    <button class="chip on" data-s="none">Por bloque</button>
+    <button class="chip" data-s="ytm">YTM</button>
+    <button class="chip" data-s="dur">Duration</button>
+  </div>
+
+  <div class="bar" style="margin-top:6px">
+    <span class="sortlab">Perfil:</span>
+    <button class="chip on" data-p="all">Todos</button>
+    <button class="chip" data-p="c">Conservador</button>
+    <button class="chip" data-p="m">Moderado</button>
+    <button class="chip" data-p="a">Agresivo</button>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th style="width:16%">Instrumento</th>
+        <th style="width:42%">Descripción</th>
+        <th style="width:15%">Perfil</th>
+        <th class="r" style="width:13%">Duration</th>
+        <th class="r" style="width:14%">YTM</th>
+      </tr>
+    </thead>
+    <tbody id="body"></tbody>
+  </table>
+
+  <div class="foot">
+    Duration modificada. YTM anualizada (TIR al vencimiento).<br>
+    Fuentes: Balanz (locales), Insigneo / Pershing (offshore), fichas de fondos. El perfil (conservador / moderado / agresivo) es una clasificación interna de riesgo del instrumento, no del cliente. Los datos no constituyen una recomendación de inversión.
+  </div>
+</main>
+
+<script>
+const COL = {
+  ao:'#4A9EFF', gd35:'#EDA100', gd38:'#3FBF56', gd41:'#8B7BEA',
+  prov:'#8B7BEA', corp:'#E0A82E', fondo:'#7C8698'
+};
+
+const DATA = [
+  {zona:'arg', bloque:'Inversiones en Argentina', grupo:'Soberanos — corto plazo',   gcol:COL.ao,
+   ticker:'AO28', perfil:'c', color:COL.ao,   desc:'Bonar 2028, ley local, amortizing',            dur:1.4, ytm:9.8},
+  {zona:'arg', bloque:'Inversiones en Argentina', grupo:'Soberanos — corto plazo',   gcol:COL.ao,
+   ticker:'AL29', perfil:'c', color:COL.ao,   desc:'Bonar 2029, ley local, cupón 1,00%',           dur:2.1, ytm:10.4},
+
+  {zona:'arg', bloque:'Inversiones en Argentina', grupo:'Soberanos — largo plazo',   gcol:COL.ao,
+   ticker:'GD35', perfil:'a', color:COL.gd35, desc:'Global 2035, ley NY, step-up, bullet',         dur:6.8, ytm:10.9},
+  {zona:'arg', bloque:'Inversiones en Argentina', grupo:'Soberanos — largo plazo',   gcol:COL.ao,
+   ticker:'GD38', perfil:'a', color:COL.gd38, desc:'Global 2038, ley NY, cupón 4,25%, amortizing', dur:6.2, ytm:10.2},
+  {zona:'arg', bloque:'Inversiones en Argentina', grupo:'Soberanos — largo plazo',   gcol:COL.ao,
+   ticker:'GD41', perfil:'a', color:COL.gd41, desc:'Global 2041, ley NY, indenture 2005',          dur:7.4, ytm:10.6},
+
+  {zona:'arg', bloque:'Inversiones en Argentina', grupo:'Subsoberanos — provinciales', gcol:COL.prov,
+   ticker:'CABA', perfil:'c', color:COL.prov, desc:'Ciudad de Buenos Aires, ley NY',               dur:2.6, ytm:7.4},
+  {zona:'arg', bloque:'Inversiones en Argentina', grupo:'Subsoberanos — provinciales', gcol:COL.prov,
+   ticker:'Entre Ríos', perfil:'a', color:COL.prov, desc:'Provincia de Entre Ríos, ley NY',        dur:2.2, ytm:10.1},
+  {zona:'arg', bloque:'Inversiones en Argentina', grupo:'Subsoberanos — provinciales', gcol:COL.prov,
+   ticker:'Córdoba', perfil:'m', color:COL.prov, desc:'Provincia de Córdoba, ley NY',              dur:3.1, ytm:9.2},
+
+  {zona:'arg', bloque:'Inversiones en Argentina', grupo:'Corporativos — obligaciones negociables', gcol:COL.corp,
+   ticker:'ON 1', perfil:null, color:COL.corp, desc:'—', dur:null, ytm:null},
+  {zona:'arg', bloque:'Inversiones en Argentina', grupo:'Corporativos — obligaciones negociables', gcol:COL.corp,
+   ticker:'ON 2', perfil:null, color:COL.corp, desc:'—', dur:null, ytm:null},
+  {zona:'arg', bloque:'Inversiones en Argentina', grupo:'Corporativos — obligaciones negociables', gcol:COL.corp,
+   ticker:'ON 3', perfil:null, color:COL.corp, desc:'—', dur:null, ytm:null},
+
+  {zona:'ext', bloque:'Fuera de Argentina — fondos en dólares', grupo:null, gcol:COL.fondo,
+   ticker:'Compass', perfil:'c', color:COL.fondo, desc:'Renta fija LatAm, grado de inversión',     dur:3.6, ytm:6.1},
+  {zona:'ext', bloque:'Fuera de Argentina — fondos en dólares', grupo:null, gcol:COL.fondo,
+   ticker:'Galileo Event Driven', perfil:'m', color:COL.fondo, desc:'Event driven, retorno absoluto', dur:2.9, ytm:7.3},
+  {zona:'ext', bloque:'Fuera de Argentina — fondos en dólares', grupo:null, gcol:COL.fondo,
+   ticker:'Fondo 3', perfil:null, color:COL.fondo, desc:'—', dur:null, ytm:null}
+];
+
+const ar = (v, dec) => v === null ? null : v.toFixed(dec).replace('.', ',');
+let filtro = 'all', orden = 'none', perfil = 'all';
+
+function dot(c){
+  return `<span style="display:inline-block;width:7px;height:7px;border-radius:2px;background:${c};margin-right:9px;vertical-align:1px"></span>`;
+}
+
+function fila(d){
+  const dur = d.dur === null ? '<span class="empty">—</span>' : ar(d.dur, 1);
+  const ytm = d.ytm === null ? '<span class="empty">—</span>' : ar(d.ytm, 1) + '%';
+  const PF = {c:['Conservador','pf-c'], m:['Moderado','pf-m'], a:['Agresivo','pf-a']};
+  const pf = d.perfil ? `<span class="pf ${PF[d.perfil][1]}">${PF[d.perfil][0]}</span>` : '<span class="empty">—</span>';
+  return `<tr>
+    <td><span class="tick" style="color:${d.color}">${dot(d.color)}${d.ticker}</span></td>
+    <td class="desc">${d.desc}</td>
+    <td>${pf}</td>
+    <td class="r num dur">${dur}</td>
+    <td class="r num ytm">${ytm}</td>
+  </tr>`;
+}
+
+function render(){
+  const rows = DATA.filter(d =>
+    (filtro === 'all' || d.zona === filtro) &&
+    (perfil === 'all' || d.perfil === perfil));
+  let html = '';
+
+  if (orden === 'none'){
+    let blk = null, grp = null;
+    for (const d of rows){
+      if (d.bloque !== blk){
+        blk = d.bloque; grp = null;
+        html += `<tr class="blk"><td colspan="5">${d.bloque}</td></tr>`;
+      }
+      if (d.grupo && d.grupo !== grp){
+        grp = d.grupo;
+        html += `<tr class="sub-r"><td colspan="5" style="color:${d.gcol}">${d.grupo}</td></tr>`;
+      }
+      html += fila(d);
+    }
+  } else {
+    const k = orden === 'ytm' ? 'ytm' : 'dur';
+    const sorted = [...rows].sort((a,b) => {
+      if (a[k] === null) return 1;
+      if (b[k] === null) return -1;
+      return b[k] - a[k];
+    });
+    html = sorted.map(fila).join('');
+  }
+  document.getElementById('body').innerHTML = html;
+}
+
+document.querySelectorAll('.chip[data-f]').forEach(b => b.onclick = () => {
+  document.querySelectorAll('.chip[data-f]').forEach(x => x.classList.remove('on'));
+  b.classList.add('on'); filtro = b.dataset.f; render();
+});
+document.querySelectorAll('.chip[data-s]').forEach(b => b.onclick = () => {
+  document.querySelectorAll('.chip[data-s]').forEach(x => x.classList.remove('on'));
+  b.classList.add('on'); orden = b.dataset.s; render();
+});
+document.querySelectorAll('.chip[data-p]').forEach(b => b.onclick = () => {
+  document.querySelectorAll('.chip[data-p]').forEach(x => x.classList.remove('on'));
+  b.classList.add('on'); perfil = b.dataset.p; render();
+});
+
+render();
+</script>
+</body>
+</html>
